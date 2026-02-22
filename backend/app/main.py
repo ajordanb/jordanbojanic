@@ -22,6 +22,7 @@ from app.db.db_manager import db_manager, create_app_admins
 from app.api.v1.auth.endpoints import auth_router
 from app.api.v1.user.endpoints import user_router
 from app.api.v1.role.endpoints import role_router
+from app.api.v1.contact.endpoints import contact_router
 from app.core.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -92,6 +93,7 @@ async def log_access(request: Request, call_next):
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(role_router)
+app.include_router(contact_router)
 
 
 

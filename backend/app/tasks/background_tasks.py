@@ -1,6 +1,9 @@
 from loguru import logger
 from app.services.email.email import EmailService
 from app.models.user.model import User
+from app.models.contact.model import ContactMessageCreate
+from app.models.util.model import EmailData
+from app.core.config import settings
 
 
 async def send_welcome_email_task(email_service: EmailService, user_email: str, token: str) -> bool:
@@ -27,6 +30,31 @@ async def send_magic_link_email_task(email_service: EmailService, user_email: st
         return await email_service.send_magic_link_email(user_email, token)
     except Exception as e:
         logger.error(f"Failed to send magic link email to {user_email}: {e}")
+        return False
+
+
+async def send_contact_notification_task(email_service: EmailService, contact: ContactMessageCreate) -> bool:
+    """Background task to notify admin of new contact message"""
+    try:
+        recipients = settings.default_admin_users if settings.admin_users else [settings.emails_from_email]
+        for recipient in recipients:
+            if not recipient:
+                continue
+            email = EmailData(
+                to=recipient,
+                subject=f"New contact message from {contact.name}",
+                html_content=(
+                    f"<h3>New message from your portfolio</h3>"
+                    f"<p><strong>Name:</strong> {contact.name}</p>"
+                    f"<p><strong>Email:</strong> {contact.email}</p>"
+                    f"<p><strong>Message:</strong></p>"
+                    f"<p>{contact.message}</p>"
+                ),
+            )
+            await email_service.send_email_async(email)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send contact notification: {e}")
         return False
 
 
