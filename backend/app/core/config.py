@@ -66,9 +66,6 @@ class Settings(BaseSettings):
     master_psk: str = "change_me"
     google_client_id: str = "change_me"
     magic_link_refresh_seconds: int = 60
-    redis_url: str = "redis://localhost:6379"
-    dramatiq_broker_url: str = "redis://localhost:6379"
-    dramatiq_namespace: str = "your_backend_app"
     cors_origins: str = "http://localhost:3000,http://localhost:5173,*"
     db_max_pool_size: int = 10
     db_min_pool_size: int = 1

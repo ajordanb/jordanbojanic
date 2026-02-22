@@ -1,11 +1,10 @@
 from typing import TypeVar
-from fastapi import HTTPException, Depends, Request
+from fastapi import HTTPException, Depends, Request, BackgroundTasks
 from app.core.security.api import  reusable_oauth
 from app.models.auth.model import Token, Policy, RefreshTokenReq
 from app.models.role.model import Role
 from app.models.user.model import User
 from app.services.auth.auth_service import SecurityService, AuthService
-from app.services.dramatiq.dramatiq_service import DramatiqService
 from app.services.email.email import EmailService
 from app.services.role.role_service import RoleService
 from app.services.user.user_service import UserService, MyUserService
@@ -13,9 +12,9 @@ from app.services.user.user_service import UserService, MyUserService
 T = TypeVar('T')
 
 
-def get_role_service() -> RoleService:
+def get_role_service(bg: BackgroundTasks) -> RoleService:
     """Dependency to get role service instance"""
-    return RoleService()
+    return RoleService(bg)
 
 def get_email_service():
     return EmailService()
@@ -28,14 +27,12 @@ def get_security_service() -> SecurityService:
 def get_auth_service(security_service=Depends(get_security_service)) -> AuthService:
     return AuthService(security_service)
 
-def get_dramatiq_service(request: Request) -> DramatiqService:
-    return DramatiqService(request.app.state.redis_client)
-
 def get_user_service(
         email_service: EmailService = Depends(get_email_service),
         auth_service: AuthService = Depends(get_auth_service),
+        bg: BackgroundTasks = BackgroundTasks(),
 ):
-    return UserService(email_service, auth_service)
+    return UserService(email_service, auth_service, bg)
 
 
 def valid_token(token: str,

@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 from starlette import status
 
 from app.models.role.model import Role, RoleBase, RoleOut
@@ -11,8 +11,8 @@ from app.tasks.background_tasks import ensure_ri_delete_role
 class RoleService:
     """Service for retrieving and updating roles"""
 
-    def __init__(self):
-        pass
+    def __init__(self, bg: BackgroundTasks):
+        self.bg = bg
 
     async def get_all_roles(self, skip: int = 0, limit: int = 1000) -> List[RoleOut]:
         """Get all roles with pagination"""
@@ -74,7 +74,7 @@ class RoleService:
         user_count = await User.find({"roles": role_id}).count()
         await role.delete()
         # Start background cleanup task
-        ensure_ri_delete_role.send(role_id)
+        self.bg.add_task(ensure_ri_delete_role, role_id)
         if user_count > 0:
             return Message(message=f"Role deleted successfully. Removing from {user_count} users in background.")
         else:

@@ -8,9 +8,10 @@ from app.core.config import settings
 from app.models.user.model import UserAuth, UpdatePassword, UserBase, APIKey, UpdateAPIKey, UserOut, UserUpdateRequest, CreateAPIKeyRequest, CreateAPIKey
 from app.models.util.model import Message
 from app.services.user.user_service import UserService, MyUserService
+from app.services.email.email import EmailService
 from app.tasks.background_tasks import send_reset_password_email_task
 from app.utills.dependencies import admin_access, CheckScope, get_user_service, get_self_user_service, \
-    validate_link_token
+    validate_link_token, get_email_service
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -36,7 +37,6 @@ async def get_all_users(
 @user_router.post("/register", dependencies=[manage_users, app_admin])
 async def create_user(
         user_register: UserAuth,
-        bg: BackgroundTasks,
         user_service: UserService = Depends(get_user_service),
 ):
     """Admin endpoint to create a new user"""
@@ -151,16 +151,14 @@ async def reset_password(
 
 @user_router.post("/test_email_task", dependencies=[app_admin])
 async def test_email_task(
+    bg: BackgroundTasks,
     email: str = Body(...),
     token: str = Body(...),
+    email_service: EmailService = Depends(get_email_service),
 ) -> Message:
     """Test endpoint to manually trigger email task"""
-    try:
-        # Send the task
-        message = send_reset_password_email_task.send(email, token)
-        return Message(message=f"Task queued successfully. Message ID: {message.message_id}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to queue task: {str(e)}")
+    bg.add_task(send_reset_password_email_task, email_service, email, token)
+    return Message(message="Email task queued successfully")
 
 """
 My User Management

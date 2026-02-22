@@ -15,7 +15,7 @@ def get_v1_description() -> str:
 - **API Key Authentication** — Machine-to-machine authentication
 - **OAuth Social Login** — Google authentication support
 - **Magic Links** — Passwordless email authentication
-- **Background Tasks** — Dramatiq with Redis for async job processing
+- **Background Tasks** — FastAPI BackgroundTasks for async processing
 - **Rate Limiting** — Protection against abuse
 
 ---
@@ -146,8 +146,6 @@ This API uses a **two-layer authorization** system:
 **Example Scopes:**
 - `users.write` — Manage users
 - `role.write` — Manage roles
-- `jobs.read` — View background jobs
-- `jobs.write` — Manage background jobs
 
 Users with the `admin` role have unrestricted access to all endpoints.
 """
@@ -256,54 +254,6 @@ Endpoints for managing roles and their associated permission scopes.
 **Built-in Scopes:**
 - `users.write` — User management
 - `role.write` — Role management
-- `jobs.read` — View background jobs
-- `jobs.write` — Manage background jobs
-"""
-    },
-    {
-        "name": "Dramatiq Monitoring",
-        "description": """
-Endpoints for monitoring and managing background tasks processed by Dramatiq.
-
-**Access Requirements:** All endpoints require `admin` role.
-
-| Operation | Required Scope | Description |
-|-----------|----------------|-------------|
-| Read | `jobs.read` | View queues, jobs, statistics |
-| Write | `jobs.write` | Cancel jobs, retry failed, clear queues |
-
-**Job Statuses:**
-
-| Status | Description |
-|--------|-------------|
-| `pending` | Job is queued, waiting to be processed |
-| `running` | Job is currently being executed |
-| `completed` | Job finished successfully |
-| `failed` | Job encountered an error |
-
-**Dashboard Response:**
-```json
-{
-  "broker_info": {
-    "redis_version": "7.0.0",
-    "connected_clients": 5,
-    "used_memory_human": "1.5M"
-  },
-  "total_stats": {
-    "total_jobs": 150,
-    "pending_jobs": 10,
-    "running_jobs": 2,
-    "completed_jobs": 130,
-    "failed_jobs": 8
-  },
-  "queues": ["default", "high-priority"]
-}
-```
-
-**Common Operations:**
-- **Retry Failed Job:** `POST /dramatiq/jobs/{message_id}/retry`
-- **Cancel Pending Job:** `POST /dramatiq/jobs/{message_id}/cancel`
-- **Clear Queue:** `DELETE /dramatiq/queues/{queue_name}/clear`
 """
     }
 ]

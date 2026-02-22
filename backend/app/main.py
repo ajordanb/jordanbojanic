@@ -1,7 +1,6 @@
 import asyncio
 import time
 from contextlib import asynccontextmanager
-import redis
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -23,7 +22,6 @@ from app.db.db_manager import db_manager, create_app_admins
 from app.api.v1.auth.endpoints import auth_router
 from app.api.v1.user.endpoints import user_router
 from app.api.v1.role.endpoints import role_router
-from app.api.v1.dramatiq.endpoints import dramatiq_router
 from app.core.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -31,7 +29,7 @@ from app.core.exception_handlers import (
     general_exception_handler,
     pydantic_validation_handler
 )
-from app.utills.health_checks import check_database, check_redis, check_dramatiq
+from app.utills.health_checks import check_database
 from app.docs.docs import get_v1_description, v1_tags_metadata
 
 setup_logging()
@@ -41,13 +39,11 @@ logger = get_logger()
 async def lifespan(app: FastAPI):
     logger.debug(f"Starting app -> {settings.mode} mode")
     app.state.limiter = limiter
-    app.state.redis_client = redis.from_url(settings.redis_url, decode_responses=True)
     app.state.db = db_manager
     await app.state.db.connect()
     await create_app_admins()
     yield
     logger.debug(f"Stopping app...")
-    app.state.redis_client.close()
     await db_manager.disconnect()
 
 
@@ -96,25 +92,17 @@ async def log_access(request: Request, call_next):
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(role_router)
-app.include_router(dramatiq_router)
 
 
 
 @app.get("/health")
 async def health_check():
-    redis_client = getattr(app.state, "redis_client", None)
-    db_result, redis_result, dramatiq_result = await asyncio.gather(
-        check_database(db_manager),
-        check_redis(redis_client),
-        check_dramatiq(),
-    )
+    db_result = await check_database(db_manager)
 
     health_status = {
         "status": "healthy",
         "services": {
             "database": db_result,
-            "redis": redis_result,
-            "dramatiq": dramatiq_result,
         }
     }
 

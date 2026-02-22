@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 from starlette import status
 
 from app.core.security.api import verify_password, get_hashed_password, password_context
@@ -20,9 +20,11 @@ class UserService:
     def __init__(self,
                  email_service: EmailService,
                  auth_service: AuthService,
+                 bg: BackgroundTasks,
                  ):
         self.email_service = email_service
         self.auth_service = auth_service
+        self.bg = bg
 
     async def get_all_users(self, skip: int = 0, limit: int = 1000) -> List[UserOut]:
         response: List[UserOut] = []
@@ -57,7 +59,7 @@ class UserService:
         new_user = User(**user_register.model_dump())
         await User.insert(new_user)
         email, token = await self.generate_user_tuple_for_email(new_user)
-        send_welcome_email_task.send(user_email=email, token=token)
+        self.bg.add_task(send_welcome_email_task, self.email_service, email, token)
         return new_user
 
     async def update_user(self, user_update: UserUpdateRequest) -> UserOut:
@@ -115,7 +117,7 @@ class UserService:
         if user.source == "Basic" or user.password is not None:
             await MagicLink.request_magic(identifier=user.id, _type=MagicType.recovery)
             email, token = await self.generate_user_tuple_for_email(user)
-            send_reset_password_email_task.send(user_email=email, token=token)
+            self.bg.add_task(send_reset_password_email_task, self.email_service, email, token)
             return Message(message="Password recovery email sent")
         else:
             raise HTTPException(status_code=400, detail="User is not authenticated via password.")
@@ -173,7 +175,7 @@ class UserService:
         if user.source.lower() == "basic" or user.password is not None:
             await MagicLink.request_magic(identifier=user.id, _type=MagicType.magic)
             email, token = await self.generate_user_tuple_for_email(user)
-            send_magic_link_email_task.send(user_email=email, token=token)
+            self.bg.add_task(send_magic_link_email_task, self.email_service, email, token)
             return Message(message="Magic link email sent")
         else:
             raise HTTPException(status_code=400, detail="User is not authenticated via password.")
