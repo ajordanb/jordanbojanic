@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  dramatiq-worker:
+    build: .
+    command: python -m dramatiq app.tasks.background_tasks --threads 4 --processes 1
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      - redis
+      - mongodb
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  dramatiq-monitoring:
+    build: .
+    command: python dramatiq_server.py
+    ports:
+      - "5152:5152"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      - redis
+      - mongodb
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  redis-commander:
+    image: ghcr.io/joeferner/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=your_db_name
+    restart: unless-stopped
+
+networks:
+  default:
+    name: dramatiq-network
