@@ -4,7 +4,7 @@ import { Github, Linkedin, BookOpen, Globe } from 'lucide-react'
 export const profile = {
   name: 'Alejandro Jordan Bojanic',
   location: 'Bentonville, AR',
-  title: 'Alejandro Jordan Bojanic — Engineering Lead',
+  title: 'Alejandro Jordan Bojanic — Integration Engineering Lead',
   languages: 'Fluent in English and Spanish.',
   opener: {
     headline:
