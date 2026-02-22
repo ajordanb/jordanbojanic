@@ -129,6 +129,31 @@ class EmailService:
         return EmailData(to=user_email, html_content=html_content, subject=subject)
 
 
+    def generate_contact_confirmation_email(self, sender_name: str, sender_email: str) -> EmailData:
+        subject = "Thanks for reaching out"
+        html_content = self.render_email_template(
+            template_name="contact_confirmation.html",
+            context={
+                "sender_name": sender_name,
+                "from_name": settings.emails_from_name,
+                "app_name": getattr(settings, 'app_name', 'Your App'),
+            },
+        )
+        return EmailData(to=sender_email, html_content=html_content, subject=subject)
+
+    def generate_contact_notification_email(self, sender_name: str, sender_email: str, message: str, recipient: str) -> EmailData:
+        subject = f"New contact message from {sender_name}"
+        html_content = self.render_email_template(
+            template_name="contact_notification.html",
+            context={
+                "sender_name": sender_name,
+                "sender_email": sender_email,
+                "message": message,
+                "app_name": getattr(settings, 'app_name', 'Your App'),
+            },
+        )
+        return EmailData(to=recipient, html_content=html_content, subject=subject)
+
     async def send_welcome_email(self, user_email: str, token: str) -> bool:
         email_data = self.generate_welcome_email(user_email, token)
         return await self.send_email_async(email_data)

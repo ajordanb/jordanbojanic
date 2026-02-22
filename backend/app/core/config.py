@@ -48,20 +48,20 @@ class Settings(BaseSettings):
     allow_new_users: bool = True
     magic_link_enabled: bool = True
     emails_enabled: bool = True
-    emails_from_name: str = "Support"
-    emails_from_email: str = ""
+    emails_from_name: str = "Alejandro Jordan"
+    emails_from_email: str = "no-reply@jordanbojanic.com"
     smtp_tls: bool = True
     smtp_ssl: bool = False
-    smtp_user: str = "apikey"
-    smtp_password: str = ""
+    smtp_user: str = "resend"
+    smtp_password: str
     smtp_port: int = 587
-    smtp_host: str = "smtp.sendgrid.net"
+    smtp_host: str = "smtp.resend.com"
     email_reset_token_expire_minutes: int = 60
     refresh_token_expire_minutes: int = 60
     token_expire_minutes: int = 30
     secret_key: str = "change_me"
     authjwt_refresh_key: str = "change_me"
-    admin_users: str = "myemail@email.com"
+    admin_users: str = ""
     user_default_password: str = "change_me"
     master_psk: str = "change_me"
     google_client_id: str = "change_me"

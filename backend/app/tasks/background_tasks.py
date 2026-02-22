@@ -2,7 +2,6 @@ from loguru import logger
 from app.services.email.email import EmailService
 from app.models.user.model import User
 from app.models.contact.model import ContactMessageCreate
-from app.models.util.model import EmailData
 from app.core.config import settings
 
 
@@ -40,21 +39,29 @@ async def send_contact_notification_task(email_service: EmailService, contact: C
         for recipient in recipients:
             if not recipient:
                 continue
-            email = EmailData(
-                to=recipient,
-                subject=f"New contact message from {contact.name}",
-                html_content=(
-                    f"<h3>New message from your portfolio</h3>"
-                    f"<p><strong>Name:</strong> {contact.name}</p>"
-                    f"<p><strong>Email:</strong> {contact.email}</p>"
-                    f"<p><strong>Message:</strong></p>"
-                    f"<p>{contact.message}</p>"
-                ),
+            email = email_service.generate_contact_notification_email(
+                sender_name=contact.name,
+                sender_email=str(contact.email),
+                message=contact.message,
+                recipient=recipient,
             )
             await email_service.send_email_async(email)
         return True
     except Exception as e:
         logger.error(f"Failed to send contact notification: {e}")
+        return False
+
+
+async def send_contact_confirmation_task(email_service: EmailService, contact: ContactMessageCreate) -> bool:
+    """Background task to send confirmation email to contact form submitter"""
+    try:
+        email = email_service.generate_contact_confirmation_email(
+            sender_name=contact.name,
+            sender_email=contact.email,
+        )
+        return await email_service.send_email_async(email)
+    except Exception as e:
+        logger.error(f"Failed to send contact confirmation to {contact.email}: {e}")
         return False
 
 

@@ -5,7 +5,7 @@ from slowapi.util import get_remote_address
 from app.models.contact.model import ContactMessage, ContactMessageCreate
 from app.models.util.model import Message
 from app.services.email.email import EmailService
-from app.tasks.background_tasks import send_contact_notification_task
+from app.tasks.background_tasks import send_contact_notification_task, send_contact_confirmation_task
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -24,5 +24,6 @@ async def submit_contact_message(
 
     email_service = EmailService()
     bg.add_task(send_contact_notification_task, email_service, body)
+    bg.add_task(send_contact_confirmation_task, email_service, body)
 
     return Message(message="Message sent successfully")
