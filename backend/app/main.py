@@ -31,7 +31,7 @@ from app.core.exception_handlers import (
     pydantic_validation_handler
 )
 from app.utills.health_checks import check_database
-from app.docs.docs import get_v1_description, v1_tags_metadata
+from app.docs.docs import get_api_description, tags_metadata
 
 setup_logging()
 logger = get_logger()
@@ -56,10 +56,10 @@ def create_app(**kwargs) -> FastAPI:
 
 app = create_app(lifespan=lifespan,
                  title=settings.app_name,
-                 description=get_v1_description(),
+                 description=get_api_description(),
                  root_path=f"/{settings.mount_point}" if settings.mount_point else None,
                  openapi_url=f"/openapi.json",
-                 openapi_tags=v1_tags_metadata,
+                 openapi_tags=tags_metadata,
                  docs_url=None,
                  redoc_url=None,
                  middleware=[Middleware(CORSMiddleware,

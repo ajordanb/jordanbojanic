@@ -72,7 +72,7 @@ export const journey: JourneyStop[] = [
     period: 'Aug 2022 – Feb 2025',
     role: 'Technical Consultant',
     company: 'Gravitate',
-    note: 'Led 10+ client integration projects, automated workflows, built team training programs.',
+    note: 'Led 10+ client integration projects, developed 20+ data pipelines and automated workflows.',
   },
   {
     period: 'Sep 2021 – Aug 2022',

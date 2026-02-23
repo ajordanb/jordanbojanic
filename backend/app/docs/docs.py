@@ -1,7 +1,7 @@
 from app.core.config import settings
 
 
-def get_v1_description() -> str:
+def get_api_description() -> str:
     """Generate API description dynamically from settings"""
     return f"""
 **{settings.app_name}** is a production-ready FastAPI backend template with comprehensive authentication, authorization, and background task processing.
@@ -30,7 +30,7 @@ Authenticate using your **username** and **password** to obtain JWT tokens.
 <summary>curl</summary>
 
 ```bash
-curl -X POST "{settings.app_domain}/v1/auth/token" \\
+curl -X POST "{settings.app_domain}/auth/token" \\
   -H "Content-Type: application/x-www-form-urlencoded" \\
   -d "username=user@example.com&password=your_password"
 ```
@@ -44,7 +44,7 @@ curl -X POST "{settings.app_domain}/v1/auth/token" \\
 import requests
 
 response = requests.post(
-    "{settings.app_domain}/v1/auth/token",
+    "{settings.app_domain}/auth/token",
     data={{
         "username": "user@example.com",
         "password": "your_password"
@@ -67,7 +67,7 @@ Include the access token in the `Authorization` header for all protected endpoin
 <summary>curl</summary>
 
 ```bash
-curl -X GET "{settings.app_domain}/v1/user/me" \\
+curl -X GET "{settings.app_domain}/user/me" \\
   -H "Authorization: Bearer <access_token>"
 ```
 
@@ -78,7 +78,7 @@ curl -X GET "{settings.app_domain}/v1/user/me" \\
 
 ```python
 response = requests.get(
-    "{settings.app_domain}/v1/user/me",
+    "{settings.app_domain}/user/me",
     headers={{"Authorization": f"Bearer {{access_token}}"}}
 )
 user = response.json()
@@ -96,7 +96,7 @@ For machine-to-machine integrations, use API keys instead of user credentials.
 <summary>curl</summary>
 
 ```bash
-curl -X POST "{settings.app_domain}/v1/auth/token" \\
+curl -X POST "{settings.app_domain}/auth/token" \\
   -H "Content-Type: application/x-www-form-urlencoded" \\
   -d "client_id=<your_client_id>&client_secret=<your_client_secret>"
 ```
@@ -113,7 +113,7 @@ Access tokens expire after {settings.token_expire_minutes} minutes. Use the refr
 <summary>curl</summary>
 
 ```bash
-curl -X POST "{settings.app_domain}/v1/auth/refresh" \\
+curl -X POST "{settings.app_domain}/auth/refresh" \\
   -H "Content-Type: application/json" \\
   -d '{{"refreshToken": "<refresh_token>"}}'
 ```
@@ -151,7 +151,7 @@ Users with the `admin` role have unrestricted access to all endpoints.
 """
 
 
-v1_tags_metadata = [
+tags_metadata = [
     {
         "name": "Authentication",
         "description": """

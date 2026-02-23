@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     """
     app_name: str = "your_backend_app"
     app_domain: str = "http://localhost:5151"
-    mount_point: str = "v1"
+    mount_point: str = ""
     db_name: str = "your_backend_app_backend"
     db_conn_str: str = "mongodb://localhost:27017/"
     allow_new_users: bool = True
