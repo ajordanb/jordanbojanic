@@ -13,7 +13,7 @@ contact_router = APIRouter(tags=["Contact"], prefix="/contact")
 
 
 @contact_router.post("", response_model=Message)
-@limiter.limit("5/minute")
+@limiter.limit("2/30 minutes")
 async def submit_contact_message(
     request: Request,
     body: ContactMessageCreate,
