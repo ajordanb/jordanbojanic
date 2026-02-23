@@ -234,17 +234,32 @@ function Slides() {
   )
 }
 
+function HeroImage({ className }: { className: string }) {
+  const [loaded, setLoaded] = useState(false)
+  return (
+    <div className="relative">
+      {!loaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-48 w-36 rounded-2xl bg-muted animate-pulse" />
+        </div>
+      )}
+      <img
+        src={heroImage}
+        alt="Boy and Dog"
+        onLoad={() => setLoaded(true)}
+        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+    </div>
+  )
+}
+
 function Home() {
   return (
     <>
       {/* Mobile — single full-page snap scroll */}
       <div className="h-[100dvh] overflow-y-auto snap-y snap-mandatory scrollbar-hidden md:hidden">
         <section className="h-[100dvh] shrink-0 snap-start snap-always flex items-center justify-center">
-          <img
-            src={heroImage}
-            alt="Boy and Dog"
-            className="h-64 w-auto object-contain"
-          />
+          <HeroImage className="h-64 w-auto object-contain" />
         </section>
         <Slides />
       </div>
@@ -252,11 +267,7 @@ function Home() {
       {/* Desktop — two-pane layout */}
       <div className="hidden md:flex h-screen overflow-hidden max-w-7xl mx-auto w-full">
         <div className="w-1/3 flex items-center justify-center p-8">
-          <img
-            src={heroImage}
-            alt="Boy and Dog"
-            className="h-[50vh] w-auto object-contain"
-          />
+          <HeroImage className="h-[50vh] w-auto object-contain" />
         </div>
         <div className="w-2/3 overflow-y-auto snap-y snap-mandatory scrollbar-hidden">
           <Slides />
