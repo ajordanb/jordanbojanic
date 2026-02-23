@@ -1,7 +1,7 @@
 from fastapi import HTTPException
-from app.models.user.model import User
-from app.services.auth.auth_service import AuthService
-from app.services.email.email import EmailService
+from app.user.model import User
+from app.auth.service import AuthService
+from app.utills.email.email import EmailService
 
 async def validate_user_does_not_exist(email: str):
     if _ := await User.by_email(email):

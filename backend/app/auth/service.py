@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from starlette import status
 
 from app.core.config import settings
-from app.models.auth.model import Token, Policy, RefreshTokenReq, NewPassword
+from app.auth.model import Token, Policy, RefreshTokenReq, NewPassword
 
 
 class SecurityExceptions:

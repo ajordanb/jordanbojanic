@@ -5,10 +5,10 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Body, Form, Request, BackgroundTasks, Path
 
 from app.core.config import settings
-from app.models.user.model import UserAuth, UpdatePassword, UserBase, APIKey, UpdateAPIKey, UserOut, UserUpdateRequest, CreateAPIKeyRequest, CreateAPIKey
+from app.user.model import UserAuth, UpdatePassword, UserBase, APIKey, UpdateAPIKey, UserOut, UserUpdateRequest, CreateAPIKeyRequest, CreateAPIKey
 from app.models.util.model import Message
-from app.services.user.user_service import UserService, MyUserService
-from app.services.email.email import EmailService
+from app.user.service import UserService, MyUserService
+from app.utills.email.email import EmailService
 from app.tasks.background_tasks import send_reset_password_email_task
 from app.utills.dependencies import admin_access, CheckScope, get_user_service, get_self_user_service, \
     validate_link_token, get_email_service

@@ -19,10 +19,10 @@ from app.core.config import settings
 from app.core.middleware import RequestIDMiddleware
 from app.core.logging_config import setup_logging, get_logger
 from app.db.db_manager import db_manager, create_app_admins
-from app.api.v1.auth.endpoints import auth_router
-from app.api.v1.user.endpoints import user_router
-from app.api.v1.role.endpoints import role_router
-from app.api.v1.contact.endpoints import contact_router
+from app.auth.endpoints import auth_router
+from app.user.endpoints import user_router
+from app.role.endpoints import role_router
+from app.contact.endpoints import contact_router
 from app.core.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,

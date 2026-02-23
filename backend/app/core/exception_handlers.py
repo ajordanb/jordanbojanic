@@ -72,7 +72,8 @@ def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSO
     message = exc.detail
     if exc.status_code >= 500 and settings.mode == Mode.prod:
         logger.error(
-            f"HTTP {exc.status_code} error on {request.method} {path}: {exc.detail}",
+            "HTTP {} error on {} {}: {}",
+            exc.status_code, request.method, path, exc.detail,
             extra={
                 "status_code": exc.status_code,
                 "path": path,
@@ -83,7 +84,8 @@ def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSO
         message = "Internal server error. Please contact support if the issue persists."
     else:
         logger.warning(
-            f"HTTP {exc.status_code} error on {request.method} {path}: {exc.detail}",
+            "HTTP {} error on {} {}: {}",
+            exc.status_code, request.method, path, exc.detail,
             extra={"status_code": exc.status_code, "path": path, "request_id": request_id}
         )
 
@@ -103,7 +105,8 @@ def validation_exception_handler(request: Request, exc: RequestValidationError) 
     errors = _format_validation_errors(exc)
 
     logger.warning(
-        f"Validation error on {request.method} {path}: {errors!r}",
+        "Validation error on {} {}: {!r}",
+        request.method, path, errors,
         extra={"path": path, "errors": errors, "request_id": request_id}
     )
 
@@ -122,7 +125,8 @@ def rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse
     request_id = _get_request_id(request)
     retry_after = 60
     logger.warning(
-        f"Rate limit exceeded on {request.method} {path}",
+        "Rate limit exceeded on {} {}",
+        request.method, path,
         extra={
             "path": path,
             "client": _get_client_ip(request),
@@ -145,7 +149,8 @@ def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     path = request.url.path
     request_id = _get_request_id(request)
     logger.error(
-        f"Unhandled exception on {request.method} {path}: {exc!r}",
+        "Unhandled exception on {} {}: {!r}",
+        request.method, path, exc,
         exc_info=True,
         extra={"path": path, "request_id": request_id}
     )
@@ -164,7 +169,8 @@ def pydantic_validation_handler(request: Request, exc: ValidationError) -> JSONR
     request_id = _get_request_id(request)
     errors = _format_validation_errors(exc)
     logger.warning(
-        f"Pydantic validation error on {request.method} {path}: {errors!r}",
+        "Pydantic validation error on {} {}: {!r}",
+        request.method, path, errors,
         extra={"path": path, "errors": errors, "request_id": request_id}
     )
     return _create_error_response(

@@ -3,13 +3,13 @@ from fastapi import HTTPException, BackgroundTasks
 from starlette import status
 
 from app.core.security.api import verify_password, get_hashed_password, password_context
-from app.models.auth.model import Token
-from app.models.magic_link.model import MagicLink, MagicType
-from app.models.role.model import Role
-from app.models.user.model import UserAuth, User, UserBase, UserOut, APIKey, UpdateAPIKey, UserUpdateRequest, CreateAPIKey
+from app.auth.model import Token
+from app.user.magic_link_model import MagicLink, MagicType
+from app.role.model import Role
+from app.user.model import UserAuth, User, UserBase, UserOut, APIKey, UpdateAPIKey, UserUpdateRequest, CreateAPIKey
 from app.models.util.model import Message
-from app.services.auth.auth_service import AuthService
-from app.services.email.email import EmailService
+from app.auth.service import AuthService
+from app.utills.email.email import EmailService
 from app.tasks.background_tasks import send_welcome_email_task, send_reset_password_email_task, \
     send_magic_link_email_task
 

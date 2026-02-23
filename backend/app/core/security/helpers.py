@@ -4,7 +4,7 @@ from async_lru import alru_cache
 
 from app.core.security.api import verify_password, CustomOAuth2RequestForm
 from app.core.config import settings
-from app.models.user.model import User, APIKey
+from app.user.model import User, APIKey
 from fastapi import HTTPException
 
 GOOGLE_KEYS_URL = "https://www.googleapis.com/oauth2/v3/certs"

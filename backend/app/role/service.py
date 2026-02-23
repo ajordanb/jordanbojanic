@@ -2,8 +2,8 @@ from typing import List
 from fastapi import HTTPException, BackgroundTasks
 from starlette import status
 
-from app.models.role.model import Role, RoleBase, RoleOut
-from app.models.user.model import User
+from app.role.model import Role, RoleBase, RoleOut
+from app.user.model import User
 from app.models.util.model import Message
 from app.tasks.background_tasks import ensure_ri_delete_role
 

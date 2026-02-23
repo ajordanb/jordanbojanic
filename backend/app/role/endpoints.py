@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter, Query, Depends, Path
-from app.models.role.model import RoleOut, RoleBase
-from app.models.user.model import User
+from app.role.model import RoleOut, RoleBase
+from app.user.model import User
 from app.models.util.model import Message
-from app.services.role.role_service import RoleService
+from app.role.service import RoleService
 from app.utills.dependencies import CheckScope, admin_access, get_role_service
 
 role_router = APIRouter(tags=["User Role Management"], prefix="/role", dependencies=[Depends(admin_access)])

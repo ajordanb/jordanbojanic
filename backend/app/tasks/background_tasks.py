@@ -1,7 +1,7 @@
 from loguru import logger
-from app.services.email.email import EmailService
-from app.models.user.model import User
-from app.models.contact.model import ContactMessageCreate
+from app.utills.email.email import EmailService
+from app.user.model import User
+from app.contact.model import ContactMessageCreate
 from app.core.config import settings
 
 

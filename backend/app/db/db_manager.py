@@ -8,8 +8,8 @@ from app.core.security.api import password_context
 from app.core.config import settings
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-from app.models.role.model import Role
-from app.models.user.model import User
+from app.role.model import Role
+from app.user.model import User
 
 
 class DatabaseManager:

@@ -1,13 +1,13 @@
 from typing import TypeVar
-from fastapi import HTTPException, Depends, Request, BackgroundTasks
+from fastapi import HTTPException, Depends, BackgroundTasks
 from app.core.security.api import  reusable_oauth
-from app.models.auth.model import Token, Policy, RefreshTokenReq
-from app.models.role.model import Role
-from app.models.user.model import User
-from app.services.auth.auth_service import SecurityService, AuthService
-from app.services.email.email import EmailService
-from app.services.role.role_service import RoleService
-from app.services.user.user_service import UserService, MyUserService
+from app.auth.model import Token, Policy, RefreshTokenReq
+from app.role.model import Role
+from app.user.model import User
+from app.auth.service import SecurityService, AuthService
+from app.utills.email.email import EmailService
+from app.role.service import RoleService
+from app.user.service import UserService, MyUserService
 
 T = TypeVar('T')
 

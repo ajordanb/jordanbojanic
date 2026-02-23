@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, Body, HTTPException, Request
 from app.core.security.helpers import password_authenticated_user, client_id_authenticated_user
-from app.models.auth.model import SocialLoginRequest, Token
+from app.auth.model import SocialLoginRequest, Token
 
 from app.core.security.api import (
     CustomOAuth2RequestForm,
 )
-from app.models.auth.model import RefreshToken
+from app.auth.model import RefreshToken
 from app.core.security.social import provider_map
 from app.core.config import settings
-from app.models.user.model import User
-from app.services.auth.auth_service import AuthService
+from app.user.model import User
+from app.auth.service import AuthService
 from app.utills.dependencies import get_auth_service, validate_refresh_token, validate_link_token
 
 from slowapi import Limiter

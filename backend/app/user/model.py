@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field
 from pymongo import IndexModel
 
-from app.models.role.model import RoleBase, Role
+from app.role.model import RoleBase, Role
 
 
 
