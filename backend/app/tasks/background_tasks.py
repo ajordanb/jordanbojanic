@@ -1,7 +1,7 @@
 from loguru import logger
 from app.utills.email.email import EmailService
 from app.user.model import User
-from app.contact.model import ContactMessageCreate
+from app.contact.model import MessageCreate
 from app.core.config import settings
 
 
@@ -32,7 +32,7 @@ async def send_magic_link_email_task(email_service: EmailService, user_email: st
         return False
 
 
-async def send_contact_notification_task(email_service: EmailService, contact: ContactMessageCreate) -> bool:
+async def send_contact_notification_task(email_service: EmailService, contact: MessageCreate) -> bool:
     """Background task to notify admin of new contact message"""
     try:
         recipients = settings.default_admin_users if settings.admin_users else [settings.emails_from_email]
@@ -52,7 +52,7 @@ async def send_contact_notification_task(email_service: EmailService, contact: C
         return False
 
 
-async def send_contact_confirmation_task(email_service: EmailService, contact: ContactMessageCreate) -> bool:
+async def send_contact_confirmation_task(email_service: EmailService, contact: MessageCreate) -> bool:
     """Background task to send confirmation email to contact form submitter"""
     try:
         email = email_service.generate_contact_confirmation_email(
