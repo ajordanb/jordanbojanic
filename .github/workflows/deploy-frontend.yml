@@ -33,7 +33,7 @@ jobs:
       - name: Build and push image
         run: |
           IMAGE=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO }}/${{ env.SERVICE }}:${{ github.sha }}
-          docker build -t $IMAGE frontend/
+          docker build --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} -t $IMAGE frontend/
           docker push $IMAGE
 
       - uses: google-github-actions/deploy-cloudrun@v2
