@@ -3,6 +3,7 @@ from fastapi import APIRouter, BackgroundTasks, Request, HTTPException
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from beanie.operators import In
 from app.contact.model import MessageCreate, Message as ContactMessage, MessageStatus
 from app.models.util.model import Message
 from app.utills.email.email import EmailService
@@ -23,7 +24,7 @@ async def submit_contact_message(
     cutoff = datetime.now(UTC) - timedelta(hours=8)
     existing = await ContactMessage.find_one(
         ContactMessage.email == body.email,
-        ContactMessage.status.in_([MessageStatus.pending, MessageStatus.open]),
+        In(ContactMessage.status, [MessageStatus.pending, MessageStatus.open]),
         ContactMessage.created_at >= cutoff
     )
     if existing:
