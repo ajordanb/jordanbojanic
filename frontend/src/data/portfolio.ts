@@ -30,7 +30,6 @@ export const interests = [
   'ETL Pipelines',
   'Kubernetes',
   'Google Cloud',
-  'Community Building',
 ]
 
 export interface Project {
