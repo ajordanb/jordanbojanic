@@ -36,7 +36,6 @@ class Settings(BaseSettings):
         authjwt_refresh_key: The refresh token key
         admin_users: The default admin users
         user_default_password: The admin default password
-        master_psk: The app master password
         google_client_id: Google OAuth client ID
         magic_link_refresh_seconds: Magic link refresh interval in seconds
     """
@@ -53,7 +52,7 @@ class Settings(BaseSettings):
     smtp_tls: bool = True
     smtp_ssl: bool = False
     smtp_user: str = "resend"
-    smtp_password: str
+    smtp_password: str = ""
     smtp_port: int = 587
     smtp_host: str = "smtp.resend.com"
     email_reset_token_expire_minutes: int = 60
@@ -63,7 +62,6 @@ class Settings(BaseSettings):
     authjwt_refresh_key: str = "change_me"
     admin_users: str = ""
     user_default_password: str = "change_me"
-    master_psk: str = "change_me"
     google_client_id: str = "change_me"
     magic_link_refresh_seconds: int = 60
     cors_origins: str = "http://localhost:3000,http://localhost:5173,*"
@@ -106,8 +104,6 @@ class Settings(BaseSettings):
                 dangerous_defaults.append("secret_key")
             if self.authjwt_refresh_key == "change_me":
                 dangerous_defaults.append("authjwt_refresh_key")
-            if self.master_psk == "change_me":
-                dangerous_defaults.append("master_psk")
             if self.user_default_password == "change_me":
                 dangerous_defaults.append("user_default_password")
 

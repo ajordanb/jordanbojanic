@@ -179,7 +179,7 @@
 
 **Deployment Configuration:**
 - Environment: Dev/Prod mode auto-detection based on connection string
-- Production validation: Enforces non-default values for `secret_key`, `authjwt_refresh_key`, `master_psk`, `user_default_password`
+- Production validation: Enforces non-default values for `secret_key`, `authjwt_refresh_key`, `user_default_password`
 - Server: Uvicorn ASGI server
 - Reload: Enabled in development (app.py)
 
@@ -201,7 +201,6 @@
 **Required env vars - Security:**
 - `ADMIN_USERS` - Comma or pipe-delimited admin email list
 - `USER_DEFAULT_PASSWORD` - Initial admin password (production: must differ from default)
-- `MASTER_PSK` - Master pre-shared key (production: must differ from default)
 - `GOOGLE_CLIENT_ID` - OAuth client ID
 
 **Optional env vars - Feature Flags:**
