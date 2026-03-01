@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends
 from app.contact.model import MessageOut, MessageUpdate, MessageReply, MessageStatus
 from app.contact.service import MessageService
 from app.models.util.model import Message as UtilMessage
 from app.utills.dependencies import admin_access, CheckScope
 from app.utills.email.email import EmailService
-from app.tasks.background_tasks import send_reply_email_task
 
 read_scope = Depends(CheckScope("messages.read"))
 write_scope = Depends(CheckScope("messages.write"))
@@ -87,16 +86,8 @@ async def delete_message(
 async def reply_to_message(
     message_id: str,
     body: MessageReply,
-    bg: BackgroundTasks,
     service: MessageService = Depends(get_message_service),
     email_service: EmailService = Depends(get_email_service),
 ) -> UtilMessage:
-    msg = await service.get_message(message_id)
-    bg.add_task(
-        send_reply_email_task,
-        email_service,
-        msg.name,
-        str(msg.email),
-        body.reply_text,
-    )
+    await service.reply(message_id, body.reply_text, email_service)
     return UtilMessage(message="Reply sent successfully")
