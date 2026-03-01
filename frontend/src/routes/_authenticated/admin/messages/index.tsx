@@ -1,40 +1,41 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { useMemo, useState } from 'react'
+import { type ColDef, type ICellRendererParams } from 'ag-grid-community'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import CustomGrid from '@/components/grid/CustomGrid'
 import { useApi } from '@/api/api'
-import type { MessageStatus } from '@/api/messages/model'
+import { statusConfig } from '@/api/messages/statusConfig'
+import type { Message, MessageStatus } from '@/api/messages/model'
 
 export const Route = createFileRoute('/_authenticated/admin/messages/')({
   component: MessagesPage,
 })
 
-const statusColors: Record<MessageStatus, string> = {
-  pending: 'bg-muted text-muted-foreground border-border',
-  open: 'bg-primary/10 text-primary border-primary/20',
-  closed: 'bg-secondary text-secondary-foreground border-border',
+const EMPTY_MESSAGES: Message[] = []
+
+function StatusCell({ value }: ICellRendererParams) {
+  const cfg = statusConfig[value as MessageStatus]
+  if (!cfg) return null
+  return (
+    <Badge variant="outline" className={`text-xs ${cfg.badge}`}>
+      {cfg.label}
+    </Badge>
+  )
+}
+
+function MessagePreviewCell({ value }: ICellRendererParams) {
+  const text: string = value ?? ''
+  return (
+    <span className="text-slate-500">
+      {text.length > 100 ? text.slice(0, 100) + '…' : text}
+    </span>
+  )
 }
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr)
   const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
   if (diffDays === 0) return 'Today'
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return `${diffDays}d ago`
@@ -48,6 +49,51 @@ function MessagesPage() {
 
   const { data: messages, isLoading, error } = api.messages.useMessagesQuery(
     statusFilter === 'all' ? undefined : statusFilter,
+  )
+
+  const columnDefs = useMemo<ColDef<Message>[]>(
+    () => [
+      {
+        headerName: 'Name',
+        field: 'name',
+        flex: 1,
+        minWidth: 130,
+        filter: 'agTextColumnFilter',
+      },
+      {
+        headerName: 'Email',
+        field: 'email',
+        flex: 1.5,
+        minWidth: 160,
+        filter: 'agTextColumnFilter',
+        cellStyle: { color: '#6b7280' },
+      },
+      {
+        headerName: 'Message',
+        field: 'message',
+        flex: 3,
+        minWidth: 200,
+        filter: false,
+        sortable: false,
+        cellRenderer: MessagePreviewCell,
+      },
+      {
+        headerName: 'Status',
+        field: 'status',
+        width: 110,
+        filter: 'agTextColumnFilter',
+        cellRenderer: StatusCell,
+      },
+      {
+        headerName: 'Received',
+        field: 'created_at',
+        width: 120,
+        filter: false,
+        valueFormatter: (p) => formatDate(p.value),
+        cellStyle: { color: '#9ca3af' },
+      },
+    ],
+    [],
   )
 
   if (error) {
@@ -65,93 +111,38 @@ function MessagesPage() {
           <h1 className="text-2xl font-semibold text-foreground">Messages</h1>
           <p className="text-sm text-muted-foreground">Contact form submissions</p>
         </div>
-        <Select
-          value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as MessageStatus | 'all')}
-        >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="Filter status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="open">Open</SelectItem>
-            <SelectItem value="closed">Closed</SelectItem>
-          </SelectContent>
-        </Select>
+
+        <div className="flex items-center gap-2">
+          {(['all', 'pending', 'open', 'closed'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                statusFilter === s
+                  ? 'bg-foreground text-background'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+            >
+              {s === 'all' ? 'All' : statusConfig[s].label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="hidden md:table-cell">Preview</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden sm:table-cell">Received</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-32" />
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <Skeleton className="h-4 w-48" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Skeleton className="h-4 w-16" />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : messages?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                  No messages found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              messages?.map((msg) => (
-                <TableRow
-                  key={msg.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() =>
-                    navigate({
-                      to: '/admin/messages/$messageId',
-                      params: { messageId: msg.id },
-                    })
-                  }
-                >
-                  <TableCell className="font-medium">{msg.name}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{msg.email}</TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground text-sm max-w-xs">
-                    <span className="truncate block">
-                      {msg.message.slice(0, 80)}
-                      {msg.message.length > 80 ? '\u2026' : ''}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={statusColors[msg.status]}>
-                      {msg.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
-                    {formatDate(msg.created_at)}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        {isLoading ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">Loading messages…</div>
+        ) : (
+          <CustomGrid<Message>
+            rowData={messages ?? EMPTY_MESSAGES}
+            columnDefs={columnDefs}
+            height="520px"
+            onRowClicked={(msg) =>
+              navigate({ to: '/admin/messages/$messageId', params: { messageId: msg.id } })
+            }
+            defaultColDef={{ sortable: true }}
+          />
+        )}
       </div>
     </div>
   )

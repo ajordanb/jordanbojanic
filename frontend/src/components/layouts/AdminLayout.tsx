@@ -46,7 +46,7 @@ function AdminBreadcrumb() {
                   <BreadcrumbPage>{labels[seg] ?? seg}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
-                    <Link to={`/admin/${seg}`}>{labels[seg] ?? seg}</Link>
+                    <Link to={`/admin/${seg}` as '/admin/messages'}>{labels[seg] ?? seg}</Link>
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
@@ -59,6 +59,7 @@ function AdminBreadcrumb() {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
+    <div className="dashboard-theme">
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
@@ -75,5 +76,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
       </SidebarInset>
     </SidebarProvider>
+    </div>
   )
 }

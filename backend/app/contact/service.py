@@ -2,7 +2,7 @@ from beanie import PydanticObjectId
 from fastapi import HTTPException
 from loguru import logger
 
-from app.contact.model import Message, MessageStatus
+from app.contact.model import Message, MessageStatus, Reply
 from app.utills.email.email import EmailService
 
 
@@ -54,4 +54,7 @@ class MessageService:
             reply_text=reply_text,
         )
         await email_service.send_email_async(email_data)
+        msg.replies.append(Reply(text=reply_text))
+        msg.replies = msg.replies[-30:]
+        await msg.save()
         logger.info("Sent reply to {} for message {}", msg.email, message_id)

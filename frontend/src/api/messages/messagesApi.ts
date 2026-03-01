@@ -57,6 +57,9 @@ export function messagesApi() {
         const body: MessageReply = { reply_text }
         return authPost(`${BASE}/${id}/reply`, body)
       },
+      onSuccess: (_, { id }) => {
+        queryClient.invalidateQueries({ queryKey: ['messages', id] })
+      },
     })
 
   return {

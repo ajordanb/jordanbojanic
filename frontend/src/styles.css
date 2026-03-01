@@ -108,6 +108,40 @@
   }
 }
 
+/* Dashboard theme — neutral gray/slate, scoped to admin area */
+.dashboard-theme {
+  --background: oklch(0.97 0.003 255);
+  --foreground: oklch(0.15 0.008 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.008 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.008 255);
+  --primary: oklch(0.25 0.012 255);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.93 0.005 255);
+  --secondary-foreground: oklch(0.2 0.01 255);
+  --muted: oklch(0.94 0.004 255);
+  --muted-foreground: oklch(0.52 0.008 255);
+  --accent: oklch(0.93 0.005 255);
+  --accent-foreground: oklch(0.15 0.008 255);
+  --border: oklch(0.88 0.005 255);
+  --input: oklch(0.88 0.005 255);
+  --ring: oklch(0.4 0.01 255);
+  --sidebar: oklch(0.18 0.012 255);
+  --sidebar-foreground: oklch(0.92 0.005 255);
+  --sidebar-primary: oklch(0.82 0.008 255);
+  --sidebar-primary-foreground: oklch(0.15 0.008 255);
+  --sidebar-accent: oklch(0.25 0.012 255);
+  --sidebar-accent-foreground: oklch(0.92 0.005 255);
+  --sidebar-border: oklch(0.28 0.01 255);
+  --sidebar-ring: oklch(0.5 0.01 255);
+}
+
+/* Clickable ag-grid rows */
+.ag-row.ag-row-hover {
+  cursor: pointer;
+}
+
 @layer utilities {
   .scrollbar-hidden {
     scrollbar-width: none;

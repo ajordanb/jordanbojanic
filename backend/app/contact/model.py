@@ -17,6 +17,11 @@ class MessagePriority(str, Enum):
     critical = "critical"
 
 
+class Reply(BaseModel):
+    text: str
+    sent_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
 class MessageCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200, description="Sender's name")
     email: EmailStr = Field(description="Sender's email address")
@@ -27,6 +32,7 @@ class Message(Document, MessageCreate):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="When the message was received")
     status: MessageStatus = Field(default=MessageStatus.pending, description="Message processing status")
     priority: MessagePriority = Field(default=MessagePriority.medium, description="Message priority")
+    replies: list[Reply] = Field(default_factory=list)
 
 
     class Settings:
@@ -61,6 +67,7 @@ class MessageOut(BaseModel):
     message: str
     status: MessageStatus
     created_at: datetime
+    replies: list[Reply] = Field(default_factory=list)
 
     @classmethod
     def from_doc(cls, doc: "Message") -> "MessageOut":
@@ -71,4 +78,5 @@ class MessageOut(BaseModel):
             message=doc.message,
             status=doc.status,
             created_at=doc.created_at,
+            replies=doc.replies,
         )
