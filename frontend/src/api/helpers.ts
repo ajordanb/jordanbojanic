@@ -126,6 +126,27 @@ async function _putRequest(
   });
 }
 
+async function _patchRequest(
+  url: string,
+  body: Record<string, any>,
+  token?: string | null,
+  params?: Record<string, any>,
+): Promise<Response> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const req_url = params ? apiUrl + url + '?' + new URLSearchParams(params) : apiUrl + url;
+  return fetch(req_url, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(body),
+  });
+}
+
 async function _deleteRequest(
   url: string,
   token?: string | null,
@@ -150,5 +171,6 @@ export {
   _postRequest,
   _getRequest,
   _putRequest,
+  _patchRequest,
   _deleteRequest,
 };

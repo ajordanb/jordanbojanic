@@ -5,6 +5,7 @@ import {
   _postRequest,
   _getRequest,
   _putRequest,
+  _patchRequest,
   _deleteRequest,
   decodeToken,
 } from '@/api/helpers';
@@ -277,6 +278,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
+  async function authPatch<T = any>(
+    url: string,
+    body?: any,
+    options: AuthPostOptions = {},
+  ): Promise<T | Blob | AuthResponse<T>> {
+    return handleAuthRequest<T>(
+      () => _patchRequest(url, body, accessToken, options.params),
+      (token) => _patchRequest(url, body, token, options.params),
+      options,
+    );
+  }
+
   async function authDelete<T = any>(
     url: string,
     options: AuthPostOptions = {},
@@ -301,6 +314,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authPost,
         authGet,
         authPut,
+        authPatch,
         authDelete,
         socialLogin,
         register,

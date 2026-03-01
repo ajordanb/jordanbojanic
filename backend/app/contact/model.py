@@ -10,6 +10,12 @@ class MessageStatus(str, Enum):
     open = "open"
     closed = "closed"
 
+class MessagePriority(str, Enum): 
+    low = "low"
+    medium = "medium"
+    high = "high"
+    critical = "critical"
+
 
 class MessageCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200, description="Sender's name")
@@ -20,6 +26,8 @@ class MessageCreate(BaseModel):
 class Message(Document, MessageCreate):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="When the message was received")
     status: MessageStatus = Field(default=MessageStatus.pending, description="Message processing status")
+    priority: MessagePriority = Field(default=MessagePriority.medium, description="Message priority")
+
 
     class Settings:
         name = "Message"
@@ -35,3 +43,32 @@ class Message(Document, MessageCreate):
 
     def __repr__(self) -> str:
         return f"<Message from={self.email}>"
+
+
+class MessageUpdate(BaseModel):
+    status: MessageStatus
+
+
+class MessageReply(BaseModel):
+    reply_text: str = Field(min_length=1, max_length=5000, description="Reply content to send to the sender")
+
+
+class MessageOut(BaseModel):
+    model_config = {"from_attributes": True}
+    id: str
+    name: str
+    email: str
+    message: str
+    status: MessageStatus
+    created_at: datetime
+
+    @classmethod
+    def from_doc(cls, doc: "Message") -> "MessageOut":
+        return cls(
+            id=str(doc.id),
+            name=doc.name,
+            email=str(doc.email),
+            message=doc.message,
+            status=doc.status,
+            created_at=doc.created_at,
+        )

@@ -4,11 +4,13 @@ import type { RoleApi } from './role/model';
 import { userApi } from './user/userApi';
 import { authApi } from './auth/authApi';
 import { roleApi } from './role/roleApi';
+import { messagesApi } from './messages/messagesApi';
 
 interface ApiCollection {
   user: UserApi;
   auth: AuthApi;
   role: RoleApi;
+  messages: ReturnType<typeof messagesApi>;
 }
 
 export const useApi = (): ApiCollection => {
@@ -16,5 +18,6 @@ export const useApi = (): ApiCollection => {
     user: userApi(),
     auth: authApi(),
     role: roleApi(),
+    messages: messagesApi(),
   };
 };

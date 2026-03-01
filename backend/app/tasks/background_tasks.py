@@ -65,6 +65,25 @@ async def send_contact_confirmation_task(email_service: EmailService, contact: M
         return False
 
 
+async def send_reply_email_task(
+    email_service: EmailService,
+    recipient_name: str,
+    recipient_email: str,
+    reply_text: str,
+) -> bool:
+    """Background task to send an admin reply email to a contact"""
+    try:
+        email = email_service.generate_reply_email(
+            recipient_name=recipient_name,
+            recipient_email=recipient_email,
+            reply_text=reply_text,
+        )
+        return await email_service.send_email_async(email)
+    except Exception as e:
+        logger.error("Failed to send reply email to {}: {}", recipient_email, e)
+        return False
+
+
 async def ensure_ri_delete_role(role_id: str) -> dict:
     """Remove a role from all users who have it (referential integrity cleanup)"""
     try:

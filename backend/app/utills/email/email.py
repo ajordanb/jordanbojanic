@@ -166,6 +166,19 @@ class EmailService:
         email_data = self.generate_magic_link_email(user_email, token)
         return await self.send_email_async(email_data)
 
+    def generate_reply_email(self, recipient_name: str, recipient_email: str, reply_text: str) -> EmailData:
+        subject = "Re: Your message to Jordan Bojanic"
+        html_content = self.render_email_template(
+            template_name="contact_reply.html",
+            context={
+                "recipient_name": recipient_name,
+                "reply_text": reply_text,
+                "from_name": settings.emails_from_name,
+                "app_name": getattr(settings, "app_name", "Your App"),
+            },
+        )
+        return EmailData(to=recipient_email, html_content=html_content, subject=subject)
+
     def __del__(self):
         if hasattr(self, 'executor'):
             self.executor.shutdown(wait=False)
