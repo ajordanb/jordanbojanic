@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { useGoogleLogin } from '@react-oauth/google'
+import { GoogleLogin } from '@react-oauth/google'
 import { FcGoogle } from 'react-icons/fc'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -47,36 +47,46 @@ function GoogleLoginButton({
   const { socialLogin } = useAuth()
   const navigate = useNavigate()
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      onLoadingChange(true)
-      try {
-        await socialLogin({ provider: 'google', data: tokenResponse })
-        navigate({ to: REDIRECT, replace: true })
-      } catch {
-        onError('Google login failed, please try again.')
-      } finally {
-        onLoadingChange(false)
-      }
-    },
-    onError: () => {
-      onError('OAuth error, please try again.')
-      onLoadingChange(false)
-    },
-    scope: 'openid email profile',
-  })
-
   return (
-    <Button
-      variant="outline"
-      className="h-11 w-full rounded-xl border-0 bg-background/60 shadow-none hover:bg-background/80"
-      disabled={disabled}
-      onClick={() => googleLogin()}
-      type="button"
-    >
-      <FcGoogle className="mr-2 size-5" />
-      Continue with Google
-    </Button>
+    <div className="relative h-11 w-full">
+      <Button
+        variant="outline"
+        className="pointer-events-none absolute inset-0 h-11 w-full rounded-xl border-0 bg-background/60 shadow-none hover:bg-background/80"
+        disabled={disabled}
+        type="button"
+        tabIndex={-1}
+      >
+        <FcGoogle className="mr-2 size-5" />
+        Continue with Google
+      </Button>
+      <div className="absolute inset-0 z-10 overflow-hidden rounded-xl opacity-0 [&>*]:!w-full [&>*]:!h-full">
+        <GoogleLogin
+          onSuccess={async (credentialResponse) => {
+            if (!credentialResponse.credential) {
+              onError('Google login failed, please try again.')
+              return
+            }
+            onLoadingChange(true)
+            try {
+              await socialLogin({
+                provider: 'google',
+                data: { credential: credentialResponse.credential },
+              })
+              navigate({ to: REDIRECT, replace: true })
+            } catch {
+              onError('Google login failed, please try again.')
+            } finally {
+              onLoadingChange(false)
+            }
+          }}
+          onError={() => onError('OAuth error, please try again.')}
+          theme="outline"
+          size="large"
+          shape="rectangular"
+          width="320"
+        />
+      </div>
+    </div>
   )
 }
 
@@ -129,7 +139,7 @@ function AdminLogin() {
             Welcome back
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sign in to manage your portfolio
+            Sign in to continue
           </p>
         </div>
 
@@ -240,7 +250,7 @@ function AdminLogin() {
             to="/"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            &larr; Back to portfolio
+            &larr; Back home
           </Link>
         </div>
       </div>
