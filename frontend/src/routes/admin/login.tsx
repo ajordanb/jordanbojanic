@@ -1,10 +1,11 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useGoogleLogin } from '@react-oauth/google'
 import { FcGoogle } from 'react-icons/fc'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -15,7 +16,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { FormWrapper } from '@/components/forms/FormWrapper'
 import { useAuth } from '@/hooks/useAuth'
 
 export const Route = createFileRoute('/admin/login')({
@@ -32,7 +32,9 @@ type LoginFormValues = z.infer<typeof loginSchema>
 const REDIRECT = '/admin/messages'
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
-// Extracted so useGoogleLogin only runs when GoogleOAuthProvider is mounted
+const inputClass =
+  'h-11 rounded-xl border-0 bg-background/60 shadow-none focus-visible:ring-2 focus-visible:ring-ring/40'
+
 function GoogleLoginButton({
   disabled,
   onError,
@@ -67,11 +69,10 @@ function GoogleLoginButton({
   return (
     <Button
       variant="outline"
-      className="w-full"
+      className="h-11 w-full rounded-xl border-0 bg-background/60 shadow-none hover:bg-background/80"
       disabled={disabled}
       onClick={() => googleLogin()}
       type="button"
-      size="lg"
     >
       <FcGoogle className="mr-2 size-5" />
       Continue with Google
@@ -112,76 +113,137 @@ function AdminLogin() {
   const showAlternateLogins = GOOGLE_CLIENT_ID
 
   return (
-    <FormWrapper
-      heading="Admin Login"
-      subheading="Sign in to manage your portfolio"
-      isLoading={isLoading}
-      error={error}
-      onErrorDismiss={() => setError(null)}
-    >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="you@example.com"
-                    disabled={isLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    disabled={isLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <div className="relative min-h-dvh flex flex-col items-center justify-center px-6 py-12 bg-background">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-80 overflow-hidden"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 60% at 50% -20%, oklch(0.96 0.012 194 / 0.55), transparent 70%), radial-gradient(ellipse 60% 50% at 50% 120%, oklch(0.35 0.06 194 / 0.2), transparent 70%)',
+        }}
+      />
 
-          <Button type="submit" className="w-full" disabled={isLoading} size="lg">
-            Sign In
-          </Button>
+      <div className="relative w-full max-w-sm">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Welcome back
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sign in to manage your portfolio
+          </p>
+        </div>
 
-          {showAlternateLogins && (
+        <div className="rounded-3xl bg-card/70 backdrop-blur-sm shadow-[0_8px_40px_-12px_rgb(0,0,0,0.15)] p-6 sm:p-8 space-y-5">
+          {error && (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-2 rounded-xl bg-destructive/10 px-3 py-2.5"
+            >
+              <p className="text-sm text-destructive">{error}</p>
+              <Button
+                onClick={() => setError(null)}
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
+                aria-label="Dismiss error"
+              >
+                <X className="size-3.5" />
+              </Button>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-10 space-y-3">
+              <div className="size-7 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+              <p className="text-sm text-muted-foreground">Signing you in...</p>
+            </div>
+          ) : (
             <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
+              {showAlternateLogins && (
+                <>
+                  <GoogleLoginButton
+                    disabled={isLoading}
+                    onError={setError}
+                    onLoadingChange={setIsLoading}
+                  />
 
-              <GoogleLoginButton
-                disabled={isLoading}
-                onError={setError}
-                onLoadingChange={setIsLoading}
-              />
+                  <div className="relative flex items-center justify-center py-1">
+                    <span className="text-xs text-muted-foreground px-2 bg-card/0">
+                      or continue with email
+                    </span>
+                  </div>
+                </>
+              )}
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-medium text-muted-foreground">
+                          Email
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="you@example.com"
+                            autoComplete="email"
+                            disabled={isLoading}
+                            className={inputClass}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-medium text-muted-foreground">
+                          Password
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            autoComplete="current-password"
+                            disabled={isLoading}
+                            className={inputClass}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    className="h-11 w-full rounded-xl shadow-none"
+                    disabled={isLoading}
+                  >
+                    Sign in
+                  </Button>
+                </form>
+              </Form>
             </>
           )}
-        </form>
-      </Form>
-    </FormWrapper>
+        </div>
+
+        <div className="mt-6 text-center">
+          <Link
+            to="/"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            &larr; Back to portfolio
+          </Link>
+        </div>
+      </div>
+    </div>
   )
 }

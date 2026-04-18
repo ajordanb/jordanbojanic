@@ -32,7 +32,7 @@ function StatusDropdown({
       <DropdownMenuTrigger asChild>
         <button
           disabled={isPending}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${cfg.badge} hover:opacity-80`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${cfg.badge} hover:opacity-80`}
         >
           <span className={`size-1.5 rounded-full ${cfg.dot}`} />
           {cfg.label}
@@ -132,14 +132,14 @@ function MessageDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-[calc(100vh-5rem)]">
-        <div className="flex items-center gap-4 p-4 border-b border-border">
+      <div className="flex flex-col h-[calc(100vh-5rem)] rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
+        <div className="flex items-center gap-4 p-4">
           <Skeleton className="h-8 w-24" />
           <Skeleton className="h-6 w-48" />
         </div>
         <div className="flex-1 p-6 space-y-4">
-          <Skeleton className="h-24 w-3/4" />
-          <Skeleton className="h-20 w-2/3 ml-auto" />
+          <Skeleton className="h-24 w-3/4 rounded-2xl" />
+          <Skeleton className="h-20 w-2/3 ml-auto rounded-2xl" />
         </div>
       </div>
     )
@@ -147,16 +147,16 @@ function MessageDetailPage() {
 
   if (error || !msg) {
     return (
-      <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4">
+      <div className="rounded-2xl bg-destructive/10 p-4">
         <p className="text-sm text-destructive">Message not found.</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] rounded-xl border border-border bg-card overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-5rem)] rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
       {/* Ticket header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 shrink-0">
         <button
           onClick={() => navigate({ to: '/admin/messages' })}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -165,7 +165,7 @@ function MessageDetailPage() {
           <span>Back</span>
         </button>
 
-        <div className="h-4 w-px bg-border mx-1" />
+        <div className="h-4 w-px bg-muted mx-1" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -195,10 +195,10 @@ function MessageDetailPage() {
           <button
             onClick={handleDelete}
             disabled={deleteMessage.isPending}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               deleteConfirm
-                ? 'bg-red-600 text-white border-red-600 hover:bg-red-700'
-                : 'border-border text-muted-foreground hover:text-destructive hover:border-destructive'
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
             }`}
           >
             <Trash2 className="size-3.5" />
@@ -216,7 +216,7 @@ function MessageDetailPage() {
       </div>
 
       {/* Conversation thread */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-muted/30">
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-muted/40">
         {allEvents.map((event) =>
           event.type === 'message' ? (
             <div key={event.key} className="flex gap-3">
@@ -230,7 +230,7 @@ function MessageDetailPage() {
                     {new Date(event.time).toLocaleString()}
                   </span>
                 </div>
-                <div className="rounded-2xl rounded-tl-sm bg-card border border-border px-4 py-3 shadow-sm">
+                <div className="rounded-2xl rounded-tl-sm bg-card px-4 py-3 shadow-sm">
                   <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                     {msg.message}
                   </p>
@@ -262,7 +262,7 @@ function MessageDetailPage() {
       </div>
 
       {/* Reply composer */}
-      <div className="border-t border-border bg-card px-4 py-3 shrink-0">
+      <div className="bg-card px-4 py-3 shrink-0">
         {replySuccess && (
           <p className="text-xs text-green-600 mb-2">Reply sent successfully.</p>
         )}
@@ -277,12 +277,12 @@ function MessageDetailPage() {
             onKeyDown={handleKeyDown}
             rows={3}
             disabled={replyToMessage.isPending}
-            className="flex-1 resize-none text-sm bg-muted/50 border-border focus-visible:ring-1 focus-visible:ring-ring"
+            className="flex-1 resize-none text-sm rounded-xl border-0 bg-muted shadow-none focus-visible:ring-2 focus-visible:ring-ring/40"
           />
           <button
             onClick={handleReply}
             disabled={!replyText.trim() || replyToMessage.isPending}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium transition-opacity disabled:opacity-40 hover:opacity-80 shrink-0"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-foreground text-background text-sm font-medium transition-opacity disabled:opacity-40 hover:opacity-80 shrink-0"
           >
             <Send className="size-4" />
             {replyToMessage.isPending ? 'Sending…' : 'Send'}

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminMessagesIndexRouteImport } from './routes/_authenticated/admin/messages/index'
 import { Route as AuthenticatedAdminMessagesMessageIdRouteImport } from './routes/_authenticated/admin/messages/$messageId'
 
@@ -29,6 +30,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminMessagesIndexRoute =
   AuthenticatedAdminMessagesIndexRouteImport.update({
     id: '/admin/messages/',
@@ -45,12 +51,14 @@ const AuthenticatedAdminMessagesMessageIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
   '/admin/messages/': typeof AuthenticatedAdminMessagesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
   '/admin/messages': typeof AuthenticatedAdminMessagesIndexRoute
 }
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
   '/_authenticated/admin/messages/': typeof AuthenticatedAdminMessagesIndexRoute
 }
@@ -67,15 +76,22 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin/login'
+    | '/admin/'
     | '/admin/messages/$messageId'
     | '/admin/messages/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin/login' | '/admin/messages/$messageId' | '/admin/messages'
+  to:
+    | '/'
+    | '/admin/login'
+    | '/admin'
+    | '/admin/messages/$messageId'
+    | '/admin/messages'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/admin/login'
+    | '/_authenticated/admin/'
     | '/_authenticated/admin/messages/$messageId'
     | '/_authenticated/admin/messages/'
   fileRoutesById: FileRoutesById
@@ -109,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/messages/': {
       id: '/_authenticated/admin/messages/'
       path: '/admin/messages'
@@ -127,11 +150,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminMessagesMessageIdRoute: typeof AuthenticatedAdminMessagesMessageIdRoute
   AuthenticatedAdminMessagesIndexRoute: typeof AuthenticatedAdminMessagesIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminMessagesMessageIdRoute:
     AuthenticatedAdminMessagesMessageIdRoute,
   AuthenticatedAdminMessagesIndexRoute: AuthenticatedAdminMessagesIndexRoute,

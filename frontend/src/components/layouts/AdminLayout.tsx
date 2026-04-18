@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { AppSidebar } from '@/components/app-sidebar'
 import {
   Breadcrumb,
@@ -58,12 +58,16 @@ function AdminBreadcrumb() {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    document.body.classList.add('dashboard-theme')
+    return () => document.body.classList.remove('dashboard-theme')
+  }, [])
+
   return (
-    <div className="dashboard-theme">
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
@@ -76,6 +80,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
       </SidebarInset>
     </SidebarProvider>
-    </div>
   )
 }

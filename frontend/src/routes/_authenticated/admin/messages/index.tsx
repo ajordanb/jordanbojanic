@@ -17,7 +17,7 @@ function StatusCell({ value }: ICellRendererParams) {
   const cfg = statusConfig[value as MessageStatus]
   if (!cfg) return null
   return (
-    <Badge variant="outline" className={`text-xs ${cfg.badge}`}>
+    <Badge className={`text-xs ${cfg.badge}`}>
       {cfg.label}
     </Badge>
   )
@@ -98,7 +98,7 @@ function MessagesPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4">
+      <div className="rounded-2xl bg-destructive/10 p-4">
         <p className="text-sm text-destructive">Failed to load messages. Please try again.</p>
       </div>
     )
@@ -108,19 +108,19 @@ function MessagesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Messages</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Messages</h1>
           <p className="text-sm text-muted-foreground">Contact form submissions</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="inline-flex items-center gap-1 rounded-full bg-muted p-1">
           {(['all', 'pending', 'open', 'closed'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 statusFilter === s
-                  ? 'bg-foreground text-background'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {s === 'all' ? 'All' : statusConfig[s].label}
@@ -129,7 +129,7 @@ function MessagesPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-sm text-muted-foreground">Loading messages…</div>
         ) : (
