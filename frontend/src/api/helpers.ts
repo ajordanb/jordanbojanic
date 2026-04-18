@@ -3,6 +3,11 @@ import type { TokenDecodedData } from '@/contexts/auth/model';
 
 const apiUrl = getAPIURL();
 
+function _buildUrl(url: string, params?: Record<string, any>): string {
+  if (!params) return apiUrl + url;
+  return apiUrl + url + '?' + new URLSearchParams(params).toString();
+}
+
 async function _formPostRequest(
   url: string,
   body: Record<string, any>,
@@ -80,7 +85,7 @@ async function _postRequest(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const req_url = params ? apiUrl + url + '?' + new URLSearchParams(params) : apiUrl + url;
+  const req_url = _buildUrl(url, params);
   return fetch(req_url, {
     method: 'POST',
     headers,
@@ -98,7 +103,7 @@ async function _getRequest(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const req_url = params ? apiUrl + url + '?' + new URLSearchParams(params) : apiUrl + url;
+  const req_url = _buildUrl(url, params);
   return fetch(req_url, {
     method: 'GET',
     headers,
@@ -118,7 +123,7 @@ async function _putRequest(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const req_url = params ? apiUrl + url + '?' + new URLSearchParams(params) : apiUrl + url;
+  const req_url = _buildUrl(url, params);
   return fetch(req_url, {
     method: 'PUT',
     headers,
@@ -139,7 +144,7 @@ async function _patchRequest(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const req_url = params ? apiUrl + url + '?' + new URLSearchParams(params) : apiUrl + url;
+  const req_url = _buildUrl(url, params);
   return fetch(req_url, {
     method: 'PATCH',
     headers,
@@ -157,11 +162,63 @@ async function _deleteRequest(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const req_url = params ? apiUrl + url + '?' + new URLSearchParams(params) : apiUrl + url;
+  const req_url = _buildUrl(url, params);
   return fetch(req_url, {
     method: 'DELETE',
     headers,
   });
+}
+
+export class PublicApiError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message);
+  }
+}
+
+async function _parsePublicResponse<T>(response: Response): Promise<T> {
+  let parsed: any = null;
+  try {
+    parsed = await response.json();
+  } catch {
+    // no JSON body
+  }
+  if (!response.ok) {
+    const message =
+      parsed?.detail ||
+      parsed?.message ||
+      parsed?.error?.message ||
+      `Request failed with status ${response.status}`;
+    throw new PublicApiError(response.status, message);
+  }
+  return parsed as T;
+}
+
+async function _publicGet<T = unknown>(
+  url: string,
+  params?: Record<string, any>,
+): Promise<T> {
+  const response = await fetch(_buildUrl(url, params), {
+    method: 'GET',
+    credentials: 'include',
+  });
+  return _parsePublicResponse<T>(response);
+}
+
+async function _publicPost<T = unknown>(
+  url: string,
+  body?: Record<string, any> | null,
+  params?: Record<string, any>,
+): Promise<T> {
+  const init: RequestInit = {
+    method: 'POST',
+    credentials: 'include',
+  };
+  if (body !== undefined && body !== null) {
+    init.headers = { 'Content-Type': 'application/json' };
+    init.body = JSON.stringify(body);
+  }
+  const response = await fetch(_buildUrl(url, params), init);
+  return _parsePublicResponse<T>(response);
 }
 
 export {
@@ -173,4 +230,6 @@ export {
   _putRequest,
   _patchRequest,
   _deleteRequest,
+  _publicGet,
+  _publicPost,
 };
