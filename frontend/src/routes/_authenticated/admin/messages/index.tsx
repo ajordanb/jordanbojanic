@@ -1,148 +1,23 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
-import { type ColDef, type ICellRendererParams } from 'ag-grid-community'
-import { Badge } from '@/components/ui/badge'
-import CustomGrid from '@/components/grid/CustomGrid'
-import { useApi } from '@/api/api'
-import { statusConfig } from '@/api/messages/statusConfig'
-import type { Message, MessageStatus } from '@/api/messages/model'
+import { createFileRoute } from '@tanstack/react-router'
+import { MessageSquare } from 'lucide-react'
 
 export const Route = createFileRoute('/_authenticated/admin/messages/')({
-  component: MessagesPage,
+  component: MessagesIndex,
 })
 
-const EMPTY_MESSAGES: Message[] = []
-
-function StatusCell({ value }: ICellRendererParams) {
-  const cfg = statusConfig[value as MessageStatus]
-  if (!cfg) return null
+function MessagesIndex() {
   return (
-    <Badge className={`text-xs ${cfg.badge}`}>
-      {cfg.label}
-    </Badge>
-  )
-}
-
-function MessagePreviewCell({ value }: ICellRendererParams) {
-  const text: string = value ?? ''
-  return (
-    <span className="text-slate-500">
-      {text.length > 100 ? text.slice(0, 100) + '…' : text}
-    </span>
-  )
-}
-
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return `${diffDays}d ago`
-  return date.toLocaleDateString()
-}
-
-function MessagesPage() {
-  const [statusFilter, setStatusFilter] = useState<MessageStatus | 'all'>('all')
-  const api = useApi()
-  const navigate = useNavigate()
-
-  const { data: messages, isLoading, error } = api.messages.useMessagesQuery(
-    statusFilter === 'all' ? undefined : statusFilter,
-  )
-
-  const columnDefs = useMemo<ColDef<Message>[]>(
-    () => [
-      {
-        headerName: 'Name',
-        field: 'name',
-        flex: 1,
-        minWidth: 130,
-        filter: 'agTextColumnFilter',
-      },
-      {
-        headerName: 'Email',
-        field: 'email',
-        flex: 1.5,
-        minWidth: 160,
-        filter: 'agTextColumnFilter',
-        cellStyle: { color: '#6b7280' },
-      },
-      {
-        headerName: 'Message',
-        field: 'message',
-        flex: 3,
-        minWidth: 200,
-        filter: false,
-        sortable: false,
-        cellRenderer: MessagePreviewCell,
-      },
-      {
-        headerName: 'Status',
-        field: 'status',
-        width: 110,
-        filter: 'agTextColumnFilter',
-        cellRenderer: StatusCell,
-      },
-      {
-        headerName: 'Received',
-        field: 'created_at',
-        width: 120,
-        filter: false,
-        valueFormatter: (p) => formatDate(p.value),
-        cellStyle: { color: '#9ca3af' },
-      },
-    ],
-    [],
-  )
-
-  if (error) {
-    return (
-      <div className="rounded-2xl bg-destructive/10 p-4">
-        <p className="text-sm text-destructive">Failed to load messages. Please try again.</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Messages</h1>
-          <p className="text-sm text-muted-foreground">Contact form submissions</p>
+    <div className="flex flex-1 items-center justify-center">
+      <div className="flex flex-col items-center gap-3 text-center px-6">
+        <div className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+          <MessageSquare className="size-6" />
         </div>
-
-        <div className="inline-flex items-center gap-1 rounded-full bg-muted p-1">
-          {(['all', 'pending', 'open', 'closed'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                statusFilter === s
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {s === 'all' ? 'All' : statusConfig[s].label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Loading messages…</div>
-        ) : (
-          <CustomGrid<Message>
-            rowData={messages ?? EMPTY_MESSAGES}
-            columnDefs={columnDefs}
-            height="520px"
-            onRowClicked={(msg) =>
-              navigate({ to: '/admin/messages/$messageId', params: { messageId: msg.id } })
-            }
-            defaultColDef={{ sortable: true }}
-          />
-        )}
+        <h2 className="text-lg font-medium tracking-tight text-foreground">
+          Select a conversation
+        </h2>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Pick a thread from the list to read and reply.
+        </p>
       </div>
     </div>
   )

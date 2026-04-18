@@ -138,11 +138,6 @@
   --sidebar-ring: oklch(0.65 0.05 194);
 }
 
-/* Clickable ag-grid rows */
-.ag-row.ag-row-hover {
-  cursor: pointer;
-}
-
 @layer utilities {
   .scrollbar-hidden {
     scrollbar-width: none;

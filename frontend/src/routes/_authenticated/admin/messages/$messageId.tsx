@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { ArrowLeft, Send, Trash2, User, Headphones, ChevronDown, Check } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Send, Trash2, Mail, ChevronDown, Check } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -9,9 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { ThreadBubbles } from '@/components/messages/ThreadBubbles'
 import { useApi } from '@/api/api'
 import { statusConfig } from '@/api/messages/statusConfig'
-import type { MessageStatus, Reply } from '@/api/messages/model'
+import type { MessageStatus } from '@/api/messages/model'
 
 export const Route = createFileRoute('/_authenticated/admin/messages/$messageId')({
   component: MessageDetailPage,
@@ -39,12 +45,12 @@ function StatusDropdown({
           <ChevronDown className="size-3 ml-0.5" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-36">
+      <DropdownMenuContent align="end" className="w-36 rounded-xl border-0 shadow-lg">
         {(Object.keys(statusConfig) as MessageStatus[]).map((s) => (
           <DropdownMenuItem
             key={s}
             onClick={() => onChange(s)}
-            className="flex items-center gap-2 text-xs"
+            className="flex items-center gap-2 text-xs rounded-lg"
           >
             <span className={`size-1.5 rounded-full ${statusConfig[s].dot}`} />
             {statusConfig[s].label}
@@ -65,7 +71,9 @@ function MessageDetailPage() {
   const [selectedStatus, setSelectedStatus] = useState<MessageStatus | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [replySuccess, setReplySuccess] = useState(false)
+  const [markedUnread, setMarkedUnread] = useState(false)
   const replySuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const unreadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const threadEndRef = useRef<HTMLDivElement>(null)
 
@@ -73,23 +81,26 @@ function MessageDetailPage() {
   const updateStatus = api.messages.useUpdateMessageStatus()
   const deleteMessage = api.messages.useDeleteMessage()
   const replyToMessage = api.messages.useReplyToMessage()
+  const markUnread = api.messages.useMarkUnread()
 
   const currentStatus = selectedStatus ?? (msg?.status as MessageStatus | undefined)
+
+  // Reset transient state when switching threads
+  useEffect(() => {
+    setSelectedStatus(null)
+    setDeleteConfirm(false)
+    setReplySuccess(false)
+    setMarkedUnread(false)
+    setReplyText('')
+  }, [messageId])
 
   useEffect(() => {
     return () => {
       if (replySuccessTimerRef.current) clearTimeout(replySuccessTimerRef.current)
+      if (unreadTimerRef.current) clearTimeout(unreadTimerRef.current)
       if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
     }
   }, [])
-
-  const allEvents = useMemo(() => {
-    if (!msg) return []
-    return [
-      { type: 'message' as const, data: msg, time: msg.created_at, key: msg.id },
-      ...msg.replies.map((r: Reply) => ({ type: 'reply' as const, data: r, time: r.sent_at, key: r.sent_at })),
-    ].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
-  }, [msg])
 
   const handleStatusChange = async (s: MessageStatus) => {
     setSelectedStatus(s)
@@ -107,6 +118,13 @@ function MessageDetailPage() {
     } catch {
       setDeleteConfirm(false)
     }
+  }
+
+  const handleMarkUnread = async () => {
+    await markUnread.mutateAsync(messageId)
+    setMarkedUnread(true)
+    if (unreadTimerRef.current) clearTimeout(unreadTimerRef.current)
+    unreadTimerRef.current = setTimeout(() => setMarkedUnread(false), 2000)
   }
 
   const handleReply = async () => {
@@ -134,8 +152,8 @@ function MessageDetailPage() {
     return (
       <div className="flex flex-col h-[calc(100vh-5rem)] rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
         <div className="flex items-center gap-4 p-4">
-          <Skeleton className="h-8 w-24" />
           <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-7 w-20 ml-auto rounded-full" />
         </div>
         <div className="flex-1 p-6 space-y-4">
           <Skeleton className="h-24 w-3/4 rounded-2xl" />
@@ -157,16 +175,6 @@ function MessageDetailPage() {
     <div className="flex flex-col h-[calc(100vh-5rem)] rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
       {/* Ticket header */}
       <div className="flex items-center gap-3 px-4 py-3 shrink-0">
-        <button
-          onClick={() => navigate({ to: '/admin/messages' })}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="size-4" />
-          <span>Back</span>
-        </button>
-
-        <div className="h-4 w-px bg-muted mx-1" />
-
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-foreground truncate">{msg.name}</span>
@@ -183,7 +191,7 @@ function MessageDetailPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           {currentStatus && (
             <StatusDropdown
               value={currentStatus}
@@ -191,6 +199,26 @@ function MessageDetailPage() {
               isPending={updateStatus.isPending}
             />
           )}
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleMarkUnread}
+                disabled={markUnread.isPending}
+                aria-label="Mark as unread"
+                className={`flex items-center justify-center size-8 rounded-full transition-colors ${
+                  markedUnread
+                    ? 'bg-green-100 text-green-700'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
+              >
+                {markedUnread ? <Check className="size-4" /> : <Mail className="size-4" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {markedUnread ? 'Marked unread' : 'Mark as unread'}
+            </TooltipContent>
+          </Tooltip>
 
           <button
             onClick={handleDelete}
@@ -207,7 +235,7 @@ function MessageDetailPage() {
           {deleteConfirm && (
             <button
               onClick={() => setDeleteConfirm(false)}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2"
             >
               Cancel
             </button>
@@ -216,48 +244,14 @@ function MessageDetailPage() {
       </div>
 
       {/* Conversation thread */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-muted/40">
-        {allEvents.map((event) =>
-          event.type === 'message' ? (
-            <div key={event.key} className="flex gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-600 mt-0.5">
-                <User className="size-4" />
-              </div>
-              <div className="max-w-[75%]">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-xs font-medium text-foreground">{msg.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(event.time).toLocaleString()}
-                  </span>
-                </div>
-                <div className="rounded-2xl rounded-tl-sm bg-card px-4 py-3 shadow-sm">
-                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                    {msg.message}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div key={event.key} className="flex gap-3 justify-end">
-              <div className="max-w-[75%]">
-                <div className="flex items-baseline gap-2 mb-1 justify-end">
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(event.time).toLocaleString()}
-                  </span>
-                  <span className="text-xs font-medium text-foreground">You</span>
-                </div>
-                <div className="rounded-2xl rounded-tr-sm bg-foreground text-background px-4 py-3 shadow-sm">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {(event.data as Reply).text}
-                  </p>
-                </div>
-              </div>
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background mt-0.5">
-                <Headphones className="size-4" />
-              </div>
-            </div>
-          ),
-        )}
+      <div className="flex-1 overflow-y-auto px-6 py-4 bg-muted/40">
+        <ThreadBubbles
+          visitorName={msg.name}
+          initialMessage={msg.message}
+          initialSentAt={msg.created_at}
+          replies={msg.replies}
+          perspective="admin"
+        />
         <div ref={threadEndRef} />
       </div>
 

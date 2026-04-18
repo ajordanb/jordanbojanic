@@ -64,7 +64,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [])
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': '22rem',
+        } as React.CSSProperties
+      }
+    >
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">

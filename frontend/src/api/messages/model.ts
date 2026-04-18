@@ -1,7 +1,10 @@
 export type MessageStatus = 'pending' | 'open' | 'closed'
 
+export type ReplyAuthor = 'visitor' | 'agent'
+
 export interface Reply {
   text: string
+  author: ReplyAuthor
   sent_at: string
 }
 
@@ -13,6 +16,7 @@ export interface Message {
   status: MessageStatus
   created_at: string
   replies: Reply[]
+  unread_by_agent: boolean
 }
 
 export interface MessageUpdate {
@@ -21,4 +25,8 @@ export interface MessageUpdate {
 
 export interface MessageReply {
   reply_text: string
+}
+
+export interface UnreadCount {
+  count: number
 }
