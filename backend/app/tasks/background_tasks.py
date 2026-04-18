@@ -70,6 +70,7 @@ async def send_reply_email_task(
     recipient_name: str,
     recipient_email: str,
     reply_text: str,
+    magic_link: str,
 ) -> bool:
     """Background task to send an admin reply email to a contact"""
     try:
@@ -77,10 +78,39 @@ async def send_reply_email_task(
             recipient_name=recipient_name,
             recipient_email=recipient_email,
             reply_text=reply_text,
+            magic_link=magic_link,
         )
         return await email_service.send_email_async(email)
     except Exception as e:
         logger.error("Failed to send reply email to {}: {}", recipient_email, e)
+        return False
+
+
+async def send_customer_reply_notification_task(
+    email_service: EmailService,
+    sender_name: str,
+    sender_email: str,
+    reply_text: str,
+    message_id: str,
+) -> bool:
+    """Background task to notify admins when a visitor replies to a thread."""
+    try:
+        recipients = settings.default_admin_users if settings.admin_users else [settings.emails_from_email]
+        admin_link = f"{settings.app_domain}/admin/messages/{message_id}"
+        for recipient in recipients:
+            if not recipient:
+                continue
+            email = email_service.generate_customer_reply_notification_email(
+                sender_name=sender_name,
+                sender_email=sender_email,
+                reply_text=reply_text,
+                recipient=recipient,
+                admin_link=admin_link,
+            )
+            await email_service.send_email_async(email)
+        return True
+    except Exception as e:
+        logger.error("Failed to send customer reply notification for message {}: {}", message_id, e)
         return False
 
 

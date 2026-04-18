@@ -24,6 +24,7 @@ from app.user.endpoints import user_router
 from app.role.endpoints import role_router
 from app.contact.endpoints import contact_router
 from app.contact.admin_endpoints import admin_message_router
+from app.contact.public_endpoints import public_thread_router
 from app.core.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -96,6 +97,7 @@ app.include_router(user_router)
 app.include_router(role_router)
 app.include_router(contact_router)
 app.include_router(admin_message_router)
+app.include_router(public_thread_router)
 
 
 

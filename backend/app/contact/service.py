@@ -2,8 +2,12 @@ from beanie import PydanticObjectId
 from fastapi import HTTPException
 from loguru import logger
 
-from app.contact.model import Message, MessageStatus, Reply
+from app.contact.model import Message, MessageStatus, Reply, ReplyAuthor
+from app.contact.thread_auth import build_magic_link, mint_thread_token
 from app.utills.email.email import EmailService
+
+
+MAX_REPLIES = 30
 
 
 class MessageService:
@@ -36,6 +40,20 @@ class MessageService:
         logger.info("Updated message {} status to {}", message_id, status)
         return msg
 
+    async def mark_read(self, message_id: str) -> Message:
+        msg = await self.get_message(message_id)
+        if msg.unread_by_agent:
+            msg.unread_by_agent = False
+            await msg.save()
+        return msg
+
+    async def mark_unread(self, message_id: str) -> Message:
+        msg = await self.get_message(message_id)
+        if not msg.unread_by_agent:
+            msg.unread_by_agent = True
+            await msg.save()
+        return msg
+
     async def delete_message(self, message_id: str) -> None:
         msg = await self.get_message(message_id)
         await msg.delete()
@@ -46,15 +64,42 @@ class MessageService:
         message_id: str,
         reply_text: str,
         email_service: EmailService,
-    ) -> None:
+    ) -> Message:
         msg = await self.get_message(message_id)
+
+        token = mint_thread_token(msg_id=str(msg.id), email=str(msg.email))
+        magic_link = build_magic_link(token)
+
         email_data = email_service.generate_reply_email(
             recipient_name=msg.name,
             recipient_email=str(msg.email),
             reply_text=reply_text,
+            magic_link=magic_link,
         )
         await email_service.send_email_async(email_data)
-        msg.replies.append(Reply(text=reply_text))
-        msg.replies = msg.replies[-30:]
+
+        msg.replies.append(Reply(text=reply_text, author=ReplyAuthor.agent))
+        msg.replies = msg.replies[-MAX_REPLIES:]
+        if msg.status == MessageStatus.pending:
+            msg.status = MessageStatus.open
+        msg.unread_by_agent = False
         await msg.save()
         logger.info("Sent reply to {} for message {}", msg.email, message_id)
+        return msg
+
+    async def append_visitor_reply(self, message_id: str, text: str) -> Message:
+        msg = await self.get_message(message_id)
+        if msg.status != MessageStatus.open:
+            raise HTTPException(
+                status_code=410,
+                detail="THREAD_CLOSED" if msg.status == MessageStatus.closed else "THREAD_NOT_READY",
+            )
+        msg.replies.append(Reply(text=text, author=ReplyAuthor.visitor))
+        msg.replies = msg.replies[-MAX_REPLIES:]
+        msg.unread_by_agent = True
+        await msg.save()
+        logger.info("Visitor reply appended to message {}", message_id)
+        return msg
+
+    async def unread_count(self) -> int:
+        return await Message.find(Message.unread_by_agent == True).count()  # noqa: E712

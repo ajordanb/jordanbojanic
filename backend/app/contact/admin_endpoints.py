@@ -1,26 +1,31 @@
 from fastapi import APIRouter, Depends
-from app.contact.model import MessageOut, MessageUpdate, MessageReply, MessageStatus
+
+from app.contact.model import MessageOut, MessageUpdate, MessageReply, MessageStatus, UnreadCount
 from app.contact.service import MessageService
 from app.models.util.model import Message as UtilMessage
-from app.utills.dependencies import admin_access, CheckScope
+from app.utills.dependencies import admin_access, CheckScope, get_email_service, get_message_service
 from app.utills.email.email import EmailService
 
 read_scope = Depends(CheckScope("messages.read"))
 write_scope = Depends(CheckScope("messages.write"))
 
 
-def get_message_service() -> MessageService:
-    return MessageService()
-
-
-def get_email_service() -> EmailService:
-    return EmailService()
-
-
 admin_message_router = APIRouter(
     prefix="/messages",
     tags=["Messages (Admin)"],
 )
+
+
+@admin_message_router.get(
+    "/unread-count",
+    response_model=UnreadCount,
+    dependencies=[Depends(admin_access), read_scope],
+)
+async def get_unread_count(
+    service: MessageService = Depends(get_message_service),
+) -> UnreadCount:
+    count = await service.unread_count()
+    return UnreadCount(count=count)
 
 
 @admin_message_router.get(
@@ -47,7 +52,7 @@ async def get_message(
     message_id: str,
     service: MessageService = Depends(get_message_service),
 ) -> MessageOut:
-    msg = await service.get_message(message_id)
+    msg = await service.mark_read(message_id)
     return MessageOut.from_doc(msg)
 
 
@@ -80,7 +85,7 @@ async def delete_message(
 
 @admin_message_router.post(
     "/{message_id}/reply",
-    response_model=UtilMessage,
+    response_model=MessageOut,
     dependencies=[Depends(admin_access), write_scope],
 )
 async def reply_to_message(
@@ -88,6 +93,19 @@ async def reply_to_message(
     body: MessageReply,
     service: MessageService = Depends(get_message_service),
     email_service: EmailService = Depends(get_email_service),
-) -> UtilMessage:
-    await service.reply(message_id, body.reply_text, email_service)
-    return UtilMessage(message="Reply sent successfully")
+) -> MessageOut:
+    msg = await service.reply(message_id, body.reply_text, email_service)
+    return MessageOut.from_doc(msg)
+
+
+@admin_message_router.post(
+    "/{message_id}/mark-unread",
+    response_model=MessageOut,
+    dependencies=[Depends(admin_access), write_scope],
+)
+async def mark_message_unread(
+    message_id: str,
+    service: MessageService = Depends(get_message_service),
+) -> MessageOut:
+    msg = await service.mark_unread(message_id)
+    return MessageOut.from_doc(msg)

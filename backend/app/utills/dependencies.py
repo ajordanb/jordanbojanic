@@ -8,6 +8,7 @@ from app.auth.service import SecurityService, AuthService
 from app.utills.email.email import EmailService
 from app.role.service import RoleService
 from app.user.service import UserService, MyUserService
+from app.contact.service import MessageService
 
 T = TypeVar('T')
 
@@ -18,6 +19,10 @@ def get_role_service(bg: BackgroundTasks) -> RoleService:
 
 def get_email_service():
     return EmailService()
+
+
+def get_message_service() -> MessageService:
+    return MessageService()
 
 
 def get_security_service() -> SecurityService:
