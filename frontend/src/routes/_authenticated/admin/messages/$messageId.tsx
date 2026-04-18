@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useRef, useEffect } from 'react'
-import { Send, Trash2, Mail, ChevronDown, Check } from 'lucide-react'
+import { ArrowLeft, Send, Trash2, Mail, ChevronDown, Check } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -150,7 +150,7 @@ function MessageDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-[calc(100vh-5rem)] rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
+      <div className="flex flex-col h-full rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
         <div className="flex items-center gap-4 p-4">
           <Skeleton className="h-6 w-48" />
           <Skeleton className="h-7 w-20 ml-auto rounded-full" />
@@ -172,9 +172,16 @@ function MessageDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
+    <div className="flex flex-col h-full rounded-2xl bg-card shadow-[0_2px_12px_-4px_rgb(0,0,0,0.06)] overflow-hidden">
       {/* Ticket header */}
       <div className="flex items-center gap-3 px-4 py-3 shrink-0">
+        <button
+          onClick={() => navigate({ to: '/admin/messages' })}
+          aria-label="Back to conversations"
+          className="md:hidden flex items-center justify-center size-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
+        >
+          <ArrowLeft className="size-4" />
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-foreground truncate">{msg.name}</span>

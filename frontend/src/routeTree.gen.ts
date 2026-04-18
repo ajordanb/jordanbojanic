@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminMessagesRouteImport } from './routes/_authenticated/admin/messages'
 import { Route as AuthenticatedAdminMessagesIndexRouteImport } from './routes/_authenticated/admin/messages/index'
 import { Route as AuthenticatedAdminMessagesMessageIdRouteImport } from './routes/_authenticated/admin/messages/$messageId'
 
@@ -35,22 +36,29 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminMessagesRoute =
+  AuthenticatedAdminMessagesRouteImport.update({
+    id: '/admin/messages',
+    path: '/admin/messages',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminMessagesIndexRoute =
   AuthenticatedAdminMessagesIndexRouteImport.update({
-    id: '/admin/messages/',
-    path: '/admin/messages/',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminMessagesRoute,
   } as any)
 const AuthenticatedAdminMessagesMessageIdRoute =
   AuthenticatedAdminMessagesMessageIdRouteImport.update({
-    id: '/admin/messages/$messageId',
-    path: '/admin/messages/$messageId',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/$messageId',
+    path: '/$messageId',
+    getParentRoute: () => AuthenticatedAdminMessagesRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/messages': typeof AuthenticatedAdminMessagesRouteWithChildren
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
   '/admin/messages/': typeof AuthenticatedAdminMessagesIndexRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/_authenticated/admin/messages': typeof AuthenticatedAdminMessagesRouteWithChildren
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
   '/_authenticated/admin/messages/': typeof AuthenticatedAdminMessagesIndexRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin/login'
+    | '/admin/messages'
     | '/admin/'
     | '/admin/messages/$messageId'
     | '/admin/messages/'
@@ -91,6 +101,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/admin/login'
+    | '/_authenticated/admin/messages'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/messages/$messageId'
     | '/_authenticated/admin/messages/'
@@ -132,34 +143,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/messages': {
+      id: '/_authenticated/admin/messages'
+      path: '/admin/messages'
+      fullPath: '/admin/messages'
+      preLoaderRoute: typeof AuthenticatedAdminMessagesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/messages/': {
       id: '/_authenticated/admin/messages/'
-      path: '/admin/messages'
+      path: '/'
       fullPath: '/admin/messages/'
       preLoaderRoute: typeof AuthenticatedAdminMessagesIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminMessagesRoute
     }
     '/_authenticated/admin/messages/$messageId': {
       id: '/_authenticated/admin/messages/$messageId'
-      path: '/admin/messages/$messageId'
+      path: '/$messageId'
       fullPath: '/admin/messages/$messageId'
       preLoaderRoute: typeof AuthenticatedAdminMessagesMessageIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminMessagesRoute
     }
   }
 }
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+interface AuthenticatedAdminMessagesRouteChildren {
   AuthenticatedAdminMessagesMessageIdRoute: typeof AuthenticatedAdminMessagesMessageIdRoute
   AuthenticatedAdminMessagesIndexRoute: typeof AuthenticatedAdminMessagesIndexRoute
 }
 
+const AuthenticatedAdminMessagesRouteChildren: AuthenticatedAdminMessagesRouteChildren =
+  {
+    AuthenticatedAdminMessagesMessageIdRoute:
+      AuthenticatedAdminMessagesMessageIdRoute,
+    AuthenticatedAdminMessagesIndexRoute: AuthenticatedAdminMessagesIndexRoute,
+  }
+
+const AuthenticatedAdminMessagesRouteWithChildren =
+  AuthenticatedAdminMessagesRoute._addFileChildren(
+    AuthenticatedAdminMessagesRouteChildren,
+  )
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminMessagesRoute: typeof AuthenticatedAdminMessagesRouteWithChildren
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminMessagesRoute: AuthenticatedAdminMessagesRouteWithChildren,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
-  AuthenticatedAdminMessagesMessageIdRoute:
-    AuthenticatedAdminMessagesMessageIdRoute,
-  AuthenticatedAdminMessagesIndexRoute: AuthenticatedAdminMessagesIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
