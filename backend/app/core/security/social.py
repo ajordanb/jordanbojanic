@@ -4,18 +4,40 @@ from pprint import pprint
 from typing import Callable, Awaitable
 import aiohttp
 import jwt
+from fastapi import HTTPException
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
+
+from app.core.config import settings
+
+_GOOGLE_ISSUERS = {"accounts.google.com", "https://accounts.google.com"}
 
 
 async def exchange_google_sso_data_for_email(data: dict, redirect_uri: str = "") -> str:
-    access_token = data["access_token"]
-    headers = {"Authorization": f"Bearer {access_token}"}
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.googleapis.com/oauth2/v3/userinfo?alt=json",
-                headers=headers,
-        ) as response:
-            data = await response.json()
-            return data["email"]
+    credential = data.get("credential")
+    if not credential:
+        raise HTTPException(status_code=400, detail="Missing Google credential")
+
+    try:
+        claims = google_id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            settings.google_client_id,
+        )
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    if claims.get("iss") not in _GOOGLE_ISSUERS:
+        raise HTTPException(status_code=401, detail="Invalid Google token issuer")
+
+    if not claims.get("email_verified"):
+        raise HTTPException(status_code=401, detail="Google email not verified")
+
+    email = claims.get("email")
+    if not email:
+        raise HTTPException(status_code=401, detail="Google token missing email")
+
+    return email
 
 
 async def exchange_microsoft_sso_data_for_email(
@@ -61,7 +83,7 @@ async def exchange_apple_sso_data_for_email(data: dict, redirect_uri: str = "") 
             access_token,
             rsa_key,
             algorithms=["RS256"],
-            audience="app.auth",  # Replace with your client ID
+            audience=settings.apple_client_id,
             issuer="https://appleid.apple.com"
         )
         pprint(decoded_token)

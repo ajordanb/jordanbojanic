@@ -80,7 +80,10 @@ async def social_login_ep(
         req: SocialLoginRequest,
         auth_service: AuthService = Depends(get_auth_service)
 ) -> RefreshToken:
-    email = await provider_map[req.provider](req.data, req.redirect_url)
+    exchange = provider_map.get(req.provider)
+    if exchange is None:
+        raise HTTPException(status_code=400, detail=f"Unsupported provider: {req.provider}")
+    email = await exchange(req.data, req.redirect_url)
     user = await User.by_email(email)
 
     if user is None:

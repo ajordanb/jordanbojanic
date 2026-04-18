@@ -63,6 +63,7 @@ class Settings(BaseSettings):
     admin_users: str = ""
     user_default_password: str = "change_me"
     google_client_id: str = "change_me"
+    apple_client_id: str = "change_me"
     magic_link_refresh_seconds: int = 60
     cors_origins: str = "http://localhost:3000,http://localhost:5173,*"
     db_max_pool_size: int = 10
