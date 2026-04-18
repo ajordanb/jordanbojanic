@@ -126,7 +126,7 @@ function ConversationsMe() {
           </div>
 
           {/* Thread */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 bg-muted/40">
+          <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4 bg-muted/40">
             <ThreadBubbles
               visitorName={thread.name}
               initialMessage={thread.message}

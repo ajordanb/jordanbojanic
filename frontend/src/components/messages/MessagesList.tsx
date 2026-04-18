@@ -152,7 +152,7 @@ export function MessagesList() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
         {filtered.length === 0 ? (
           <div className="px-4 py-8 text-center text-xs text-muted-foreground">
             {messages.length === 0 ? 'No conversations yet' : 'No matches'}
