@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConversationsVerifyRouteImport } from './routes/conversations/verify'
+import { Route as ConversationsMeRouteImport } from './routes/conversations/me'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminMessagesRouteImport } from './routes/_authenticated/admin/messages'
@@ -30,6 +32,16 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConversationsVerifyRoute = ConversationsVerifyRouteImport.update({
+  id: '/conversations/verify',
+  path: '/conversations/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConversationsMeRoute = ConversationsMeRouteImport.update({
+  id: '/conversations/me',
+  path: '/conversations/me',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -65,6 +77,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/admin/login': typeof AdminLoginRoute
+  '/conversations/me': typeof ConversationsMeRoute
+  '/conversations/verify': typeof ConversationsVerifyRoute
   '/admin/messages': typeof AuthenticatedAdminMessagesRouteWithChildren
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
@@ -74,6 +88,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/admin/login': typeof AdminLoginRoute
+  '/conversations/me': typeof ConversationsMeRoute
+  '/conversations/verify': typeof ConversationsVerifyRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
   '/admin/messages': typeof AuthenticatedAdminMessagesIndexRoute
@@ -84,6 +100,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/contact': typeof ContactRoute
   '/admin/login': typeof AdminLoginRoute
+  '/conversations/me': typeof ConversationsMeRoute
+  '/conversations/verify': typeof ConversationsVerifyRoute
   '/_authenticated/admin/messages': typeof AuthenticatedAdminMessagesRouteWithChildren
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/messages/$messageId': typeof AuthenticatedAdminMessagesMessageIdRoute
@@ -95,6 +113,8 @@ export interface FileRouteTypes {
     | '/'
     | '/contact'
     | '/admin/login'
+    | '/conversations/me'
+    | '/conversations/verify'
     | '/admin/messages'
     | '/admin/'
     | '/admin/messages/$messageId'
@@ -104,6 +124,8 @@ export interface FileRouteTypes {
     | '/'
     | '/contact'
     | '/admin/login'
+    | '/conversations/me'
+    | '/conversations/verify'
     | '/admin'
     | '/admin/messages/$messageId'
     | '/admin/messages'
@@ -113,6 +135,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/contact'
     | '/admin/login'
+    | '/conversations/me'
+    | '/conversations/verify'
     | '/_authenticated/admin/messages'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/messages/$messageId'
@@ -124,6 +148,8 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ContactRoute: typeof ContactRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  ConversationsMeRoute: typeof ConversationsMeRoute
+  ConversationsVerifyRoute: typeof ConversationsVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -147,6 +173,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conversations/verify': {
+      id: '/conversations/verify'
+      path: '/conversations/verify'
+      fullPath: '/conversations/verify'
+      preLoaderRoute: typeof ConversationsVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conversations/me': {
+      id: '/conversations/me'
+      path: '/conversations/me'
+      fullPath: '/conversations/me'
+      preLoaderRoute: typeof ConversationsMeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/login': {
@@ -223,6 +263,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ContactRoute: ContactRoute,
   AdminLoginRoute: AdminLoginRoute,
+  ConversationsMeRoute: ConversationsMeRoute,
+  ConversationsVerifyRoute: ConversationsVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
