@@ -66,11 +66,12 @@ def setup_logging() -> None:
     """
     logger.remove()
     if settings.mode == Mode.prod:
+        def json_sink(message):
+            print(serialize_record(message.record), file=sys.stdout, flush=True)
+
         logger.add(
-            sys.stdout,
-            format=serialize_record,
+            json_sink,
             level="INFO",
-            serialize=False,
             enqueue=True,
             backtrace=False,
             diagnose=False,
